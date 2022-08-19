@@ -1,0 +1,33 @@
+[advisories]
+vulnerability = "deny"
+unmaintained = "deny"
+yanked = "deny"
+notice = "deny"
+ignore = [
+  "RUSTSEC-2020-0056", # used by bevy_audio
+  "RUSTSEC-2021-0139", # used by bevy_log
+]
+
+[licenses]
+default = "deny"
+unlicensed = "deny"
+copyleft = "deny"
+allow = [
+  "Unlicense",
+  "Apache-2.0",
+  "MIT",
+  "MIT-0",
+  "ISC",
+  "Unicode-DFS-2016",
+  "BSD-3-Clause",
+  "BSD-2-Clause",
+  "Zlib",
+  "CC0-1.0",
+ ]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+
+[bans]
+multiple-versions = "allow"
