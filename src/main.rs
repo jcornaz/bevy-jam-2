@@ -1,18 +1,24 @@
-#![deny(future_incompatible, unsafe_code)]
-#![warn(nonstandard_style, rust_2018_idioms)]
+use bevy::{prelude::*, render::texture::ImageSettings};
 
-use bevy::prelude::*;
-use bevy_prototype_lyon::prelude::*;
-
-#[cfg(feature = "bevy-inspector-egui")]
-use bevy_inspector_egui::prelude::*;
+mod camera;
+mod field;
 
 fn main() {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins).add_plugin(ShapePlugin);
+    app.insert_resource(ImageSettings::default_nearest())
+        .add_plugins(DefaultPlugins);
 
-    #[cfg(feature = "bevy-inspector-egui")]
-    app.add_plugin(WorldInspectorPlugin::default());
+    #[cfg(feature = "inspector")]
+    app.add_plugin(bevy_inspector_egui::WorldInspectorPlugin::default());
 
-    app.run();
+    app.add_plugin(field::Plugin::default())
+        .add_plugin(camera::Plugin::default())
+        // .add_system(print_asset_state)
+        .run();
 }
+
+// fn print_asset_state(q: Query<&Handle<TextureAtlas>>, server: Res<AssetServer>) {
+//     for h in q.iter().take(1) {
+//         println!("{:?}", server.get_load_state(h));
+//     }
+// }

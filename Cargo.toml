@@ -9,11 +9,13 @@ description = ""
 categories = []
 keywords = []
 
+[features]
+default = []
+inspector = ["bevy-inspector-egui"]
+
 [dependencies]
 bevy = { version = "0.8.0", default-features = false, features = ["animation", "bevy_asset", "bevy_audio", "bevy_scene", "bevy_winit", "render", "png", "vorbis", "x11"] }
-benimator = "=4.0.0-rc.1"
-bevy-inspector-egui = { version = "0.12.1", optional = true, default-features = false, features = ["bevy_render", "bevy_sprite", "bevy_text", "bevy_ui"] }
-bevy_prototype_lyon = "0.6.0"
+bevy-inspector-egui = {  version = "0.12.1", optional = true, default-features = false, features = ["bevy_render", "bevy_sprite", "bevy_text", "bevy_ui"] }
 
 [dev-dependencies]
 
