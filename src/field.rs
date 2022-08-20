@@ -2,8 +2,8 @@ use bevy::prelude::*;
 
 #[derive(Debug, Clone)]
 pub struct Field {
-    pub(crate) width: usize,
-    pub(crate) height: usize,
+    pub(crate) width: u32,
+    pub(crate) height: u32,
     #[allow(unused)]
     cells: Vec<Cell>,
 }
@@ -14,9 +14,9 @@ pub enum Cell {
 }
 
 impl Field {
-    pub fn new(width: usize, height: usize) -> Self {
+    pub fn new(width: u32, height: u32) -> Self {
         let mut cells = Vec::new();
-        cells.resize(width * height, Cell::Crop);
+        cells.resize((width * height) as usize, Cell::Crop);
         Self {
             width,
             height,
@@ -25,34 +25,17 @@ impl Field {
     }
 
     pub fn center(&self) -> Position {
-        Position {
-            x: self.width / 2,
-            y: self.height / 2,
-        }
+        Position(IVec2::new(
+            (self.width / 2) as i32,
+            (self.height / 2) as i32,
+        ))
     }
 }
 
-#[derive(Debug, Default, Component, Clone, Copy)]
+#[derive(Debug, Default, Component, Clone, Copy, Deref, DerefMut)]
 #[cfg_attr(feature = "inspector", derive(bevy_inspector_egui::Inspectable))]
 #[allow(unused)]
-pub struct Position {
-    #[cfg_attr(feature = "inspector", inspectable(read_only))]
-    pub x: usize,
-    #[cfg_attr(feature = "inspector", inspectable(read_only))]
-    pub y: usize,
-}
-
-impl Position {
-    pub fn into_translation(self, z: f32) -> Vec3 {
-        Vec2::from(self).extend(z)
-    }
-}
-
-impl From<Position> for Vec2 {
-    fn from(Position { x, y }: Position) -> Self {
-        Self::new(x as f32, y as f32)
-    }
-}
+pub struct Position(pub(crate) IVec2);
 
 #[derive(Default)]
 pub struct Plugin;
@@ -94,7 +77,7 @@ impl Plugin {
                     texture_atlas: crop_texture.clone(),
                     ..Default::default()
                 });
-                entity.insert(Position { x, y });
+                entity.insert(Position(UVec2::new(x, y).as_ivec2()));
 
                 #[cfg(feature = "inspector")]
                 entity.insert(Name::from(format!("Cell ({x},{y})")));
