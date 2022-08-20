@@ -6,8 +6,29 @@ The theme is "Combine"
 
 ## Game idea
 
-TODO
+You are in the middle of a crop field and drive a combine that needs to harvest as much crop as possible.
 
+But enemies are attacking both the field and the combine.
+Conveniently the combine is equipped with a turret that can shoot enemies using the harvested crop as AMMO.
+
+The game is played on a grid of squared cells.
+A cell can be harvested at most once.
+Cells may also be "harvested" or "destroyed" by enemies. (birds eating the crops, falling meteors, etc.)
+
+Difficulty gradually increases over time by having more enemies spawning, and fewer crops to harvest.
+The game ends on player death, showing a score that is the quantity of the harvested crop.
+
+### Controls
+
+* Use WASD or the arrow keys to change the direction of the combine (the combine advances automatically and cannot be stopped)
+* Aim with the mouse and shoot with left-click
+
+### Potential names for the game
+
+* The great harvest
+* The last harvest
+* Harvest for your life
+* Crop is ammo
 
 ## MSRV
 
