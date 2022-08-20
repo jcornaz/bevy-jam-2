@@ -27,11 +27,21 @@ impl bevy::prelude::Plugin for Plugin {
         app.add_startup_system(Self::spawn)
             .add_system(Self::movement)
             .add_system(Self::control)
+            .add_system(Self::harvest)
             .add_system_to_stage(CoreStage::PostUpdate, Self::rotate_sprite);
     }
 }
 
 impl Plugin {
+    fn harvest(
+        mut field: ResMut<Field>,
+        combine: Query<&Position, (Changed<Position>, With<Control>)>,
+    ) {
+        for &position in &combine {
+            field.harvest(position);
+        }
+    }
+
     fn control(input: Res<Input<KeyCode>>, mut combine: Query<(&mut Control, &Direction)>) {
         for (mut control, &direction) in combine.iter_mut() {
             let asked = if input.pressed(KeyCode::Up) || input.pressed(KeyCode::W) {
