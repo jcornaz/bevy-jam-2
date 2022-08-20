@@ -1,6 +1,6 @@
 # bevy-jam-2
 
-My (potential) contribution for the bevy-jam 2 https://itch.io/jam/bevy-jam-2
+My (potential) contribution for the [bevy-jam 2](https://itch.io/jam/bevy-jam-2)
 
 The theme is "Combine"
 
