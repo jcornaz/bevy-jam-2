@@ -32,7 +32,7 @@ impl Field {
     }
 }
 
-#[derive(Debug, Default, Component)]
+#[derive(Debug, Default, Component, Clone, Copy)]
 #[cfg_attr(feature = "inspector", derive(bevy_inspector_egui::Inspectable))]
 #[allow(unused)]
 pub struct Position {
@@ -88,7 +88,6 @@ impl Plugin {
                 let mut entity = commands.spawn_bundle(SpriteSheetBundle {
                     transform: Transform::from_xyz(x as f32, y as f32, 0.0),
                     sprite: TextureAtlasSprite {
-                        index: 0,
                         custom_size: Some(Vec2::ONE),
                         ..Default::default()
                     },
