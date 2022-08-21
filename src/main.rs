@@ -4,6 +4,7 @@ mod camera;
 mod combine;
 mod enemy;
 mod field;
+mod turret;
 
 fn main() {
     let mut app = App::new();
@@ -17,5 +18,6 @@ fn main() {
         .add_plugin(camera::Plugin::default())
         .add_plugin(combine::Plugin::default())
         .add_plugin(enemy::Plugin::default())
+        .add_plugin(turret::Plugin::default())
         .run();
 }
