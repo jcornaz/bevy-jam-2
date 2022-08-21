@@ -1,6 +1,6 @@
-use bevy::prelude::*;
+use bevy::{ecs::schedule::ShouldRun, prelude::*};
 
-use crate::{combine::Harvester, mouse::Cursor};
+use crate::{combine::Harvester, mouse::Cursor, Moving};
 
 #[derive(Debug, Default)]
 struct AssetTable {
@@ -11,6 +11,9 @@ struct AssetTable {
 #[derive(Debug, Clone, Copy, Default, Component)]
 struct Turret;
 
+#[derive(Debug, Clone, Copy, Default, Component)]
+struct Bullet;
+
 #[derive(Default)]
 pub struct Plugin;
 
@@ -19,11 +22,40 @@ impl bevy::prelude::Plugin for Plugin {
         app.init_resource::<AssetTable>()
             .add_startup_system_to_stage(StartupStage::PreStartup, Self::load_assets)
             .add_startup_system(Self::spawn_turret)
-            .add_system_to_stage(CoreStage::PreUpdate, Self::aim);
+            .add_system_to_stage(CoreStage::PreUpdate, Self::aim)
+            .add_system(Self::shoot.with_run_criteria(Self::should_shoot));
     }
 }
 
 impl Plugin {
+    fn should_shoot(input: Res<Input<MouseButton>>) -> ShouldRun {
+        if input.just_pressed(MouseButton::Left) {
+            ShouldRun::Yes
+        } else {
+            ShouldRun::No
+        }
+    }
+
+    fn shoot(
+        mut commands: Commands,
+        turrets: Query<&Transform, With<Turret>>,
+        assets: Res<AssetTable>,
+    ) {
+        for turret_transform in &turrets {
+            commands
+                .spawn_bundle(SpriteSheetBundle {
+                    texture_atlas: assets.bullet.clone(),
+                    transform: *turret_transform,
+                    sprite: TextureAtlasSprite {
+                        custom_size: Some(Vec2::ONE),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .insert(Moving { speed: 10.0 });
+        }
+    }
+
     fn aim(
         cursor: Res<Cursor>,
         mut turrets: Query<&mut Transform, (With<Turret>, Without<Harvester>)>,
