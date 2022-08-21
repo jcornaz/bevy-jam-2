@@ -128,7 +128,7 @@ impl Plugin {
             1,
         ));
         index.harvested = textures.add(TextureAtlas::from_grid(
-            asset_server.load("harvested.png"),
+            asset_server.load("empty_cell.png"),
             Vec2::splat(32.0),
             1,
             1,

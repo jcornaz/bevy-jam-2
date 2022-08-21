@@ -2,6 +2,7 @@ use bevy::{prelude::*, render::texture::ImageSettings};
 
 mod camera;
 mod combine;
+mod enemy;
 mod field;
 
 fn main() {
@@ -15,5 +16,6 @@ fn main() {
     app.add_plugin(field::Plugin::default())
         .add_plugin(camera::Plugin::default())
         .add_plugin(combine::Plugin::default())
+        .add_plugin(enemy::Plugin::default())
         .run();
 }
