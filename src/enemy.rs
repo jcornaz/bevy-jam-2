@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::{ecs::schedule::ShouldRun, prelude::*};
 use rand::{thread_rng, Rng};
 
-use crate::{combine::Harvester, field::Field};
+use crate::{combine::Harvester, field::Field, Moving};
 
 #[derive(Debug, Clone, Default)]
 struct AssetTable {
@@ -31,7 +31,7 @@ impl bevy::prelude::Plugin for Plugin {
             .init_resource::<SpawnTimer>()
             .add_startup_system(Self::load_assets)
             .add_system(Self::spawn.with_run_criteria(Self::should_spawn))
-            .add_system(Self::movement);
+            .add_system(Self::aim);
     }
 }
 
@@ -45,15 +45,10 @@ impl Plugin {
         }
     }
 
-    fn movement(
-        time: Res<Time>,
+    fn aim(
         mut enemies: Query<&mut Transform, With<Enemy>>,
         combines: Query<&Transform, (With<Harvester>, Without<Enemy>)>,
     ) {
-        /// Speed, expressed in tile-per-seconds
-        const SPEED: f32 = 3.0;
-        let delta = SPEED * time.delta_seconds();
-
         let combine_transform = match combines.get_single() {
             Ok(t) => t,
             Err(_) => {
@@ -66,10 +61,9 @@ impl Plugin {
             let separation =
                 combine_transform.translation.truncate() - enemy_transform.translation.truncate();
             if separation.length_squared() > 0.2 {
-                enemy_transform.translation += separation
-                    .normalize()
-                    .clamp_length(delta, delta)
-                    .extend(0.0);
+                let direction = separation.normalize();
+                let angle = Vec2::X.angle_between(direction);
+                enemy_transform.rotation = Quat::from_axis_angle(Vec3::Z, angle);
             }
         }
     }
@@ -94,7 +88,8 @@ impl Plugin {
                 ..Default::default()
             })
             .insert(Enemy)
-            .insert(Name::from("Enemy"));
+            .insert(Name::from("Enemy"))
+            .insert(Moving { speed: 3.0 });
     }
 
     fn load_assets(
