@@ -7,6 +7,8 @@ use crate::field::{Cell, Field, Position};
 #[derive(Debug, Clone, Copy, Component)]
 pub struct Harvester;
 
+pub struct Harvested;
+
 #[derive(Debug, Clone, Component)]
 struct Movement {
     direction: IVec2,
@@ -45,6 +47,7 @@ pub struct Plugin;
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(Self::spawn)
+            .add_event::<Harvested>()
             .add_system(Self::movement)
             .add_system(Self::control)
             .add_system(Self::harvest)
@@ -57,13 +60,16 @@ impl Plugin {
         field: ResMut<Field>,
         combine: Query<&Transform, With<Harvester>>,
         mut cells: Query<&mut Cell>,
+        mut events: EventWriter<Harvested>,
     ) {
         for position in combine
             .iter()
             .filter_map(|&t| field.get_at(t.translation.truncate()))
         {
             if let Ok(mut cell) = cells.get_mut(position) {
-                cell.harvest();
+                if cell.harvest() {
+                    events.send(Harvested);
+                }
             }
         }
     }

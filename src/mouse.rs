@@ -1,4 +1,4 @@
-use bevy::{input::InputSystem, prelude::*, render::camera::RenderTarget};
+use bevy::{prelude::*, render::camera::RenderTarget};
 
 #[derive(Debug, Clone, Default, Deref)]
 pub struct Cursor(Vec2);
@@ -9,7 +9,7 @@ pub struct Plugin;
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.init_resource::<Cursor>()
-            .add_system_to_stage(CoreStage::First, Self::track_cursor.after(InputSystem));
+            .add_system_to_stage(CoreStage::First, Self::track_cursor);
     }
 }
 

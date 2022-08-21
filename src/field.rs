@@ -14,8 +14,14 @@ pub enum Cell {
 }
 
 impl Cell {
-    pub fn harvest(&mut self) {
-        *self = Cell::Harvested;
+    pub fn harvest(&mut self) -> bool {
+        match self {
+            Cell::Crop => {
+                *self = Cell::Harvested;
+                true
+            }
+            Cell::Harvested => false,
+        }
     }
 }
 

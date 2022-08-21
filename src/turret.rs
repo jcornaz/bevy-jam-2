@@ -1,8 +1,13 @@
 use std::time::Duration;
 
-use bevy::{ecs::schedule::ShouldRun, prelude::*};
+use bevy::{ecs::schedule::ShouldRun, prelude::*, time::FixedTimestep};
 
-use crate::{combine::Harvester, enemy::Enemy, mouse::Cursor, DespawnTimer, Moving};
+use crate::{
+    combine::{Harvested, Harvester},
+    enemy::Enemy,
+    mouse::Cursor,
+    DespawnTimer, Moving,
+};
 
 #[derive(Debug, Default)]
 struct AssetTable {
@@ -23,6 +28,9 @@ impl Default for Turret {
     }
 }
 
+#[derive(Debug, Clone, Default, Component, Deref, DerefMut)]
+pub struct Ammo(u32);
+
 #[derive(Debug, Clone, Component, Default)]
 struct Bullet;
 
@@ -32,26 +40,46 @@ pub struct Plugin;
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AssetTable>()
+            .init_resource::<Ammo>()
             .add_startup_system_to_stage(StartupStage::PreStartup, Self::load_assets)
             .add_startup_system(Self::spawn_turret)
             .add_system_to_stage(CoreStage::PreUpdate, Self::aim)
             .add_system(Self::spawn_bullet.with_run_criteria(Self::shoot))
-            .add_system(Self::kill_enemy);
+            .add_system(Self::kill_enemy)
+            .add_system_to_stage(CoreStage::PostUpdate, Self::recharge)
+            .add_system(Self::log_ammo.with_run_criteria(FixedTimestep::step(1.0)));
     }
 }
 
 impl Plugin {
+    fn log_ammo(ammos: Query<&Ammo>) {
+        for ammo in &ammos {
+            info!("Ammo: {:?}", **ammo);
+        }
+    }
+
+    fn recharge(mut harvests: EventReader<Harvested>, mut ammos: Query<&mut Ammo>) {
+        for mut ammo in &mut ammos {
+            for _ in harvests.iter() {
+                const AMMO_PER_CROP_CELL: u32 = 4;
+                const MAX_AMMO: u32 = 20;
+                **ammo = (**ammo + AMMO_PER_CROP_CELL).min(MAX_AMMO);
+            }
+        }
+    }
+
     fn shoot(
         input: Res<Input<MouseButton>>,
-        mut turrets: Query<&mut Turret>,
+        mut turrets: Query<(&mut Turret, &mut Ammo)>,
         time: Res<Time>,
     ) -> ShouldRun {
-        let mut turret = match turrets.get_single_mut() {
+        let (mut turret, mut ammo) = match turrets.get_single_mut() {
             Ok(t) => t,
             Err(_) => return ShouldRun::No,
         };
         turret.cool_down.tick(time.delta());
-        if turret.cool_down.finished() && input.pressed(MouseButton::Left) {
+        if turret.cool_down.finished() && input.pressed(MouseButton::Left) && **ammo > 0 {
+            **ammo -= 1;
             turret.cool_down = Timer::new(Duration::from_secs_f32(0.2), false);
             ShouldRun::Yes
         } else {
@@ -131,7 +159,8 @@ impl Plugin {
                 ..Default::default()
             })
             .insert(Turret::default())
-            .insert(Name::from("Turret"));
+            .insert(Name::from("Turret"))
+            .insert(Ammo::default());
     }
 
     fn load_assets(
