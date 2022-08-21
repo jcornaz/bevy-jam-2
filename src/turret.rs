@@ -59,12 +59,14 @@ impl Plugin {
     }
 
     fn recharge(mut harvests: EventReader<Harvested>, mut ammos: Query<&mut Ammo>) {
+        let harvest_count = harvests.iter().count() as u32;
+        if harvest_count == 0 {
+            return;
+        }
         for mut ammo in &mut ammos {
-            for _ in harvests.iter() {
-                const AMMO_PER_CROP_CELL: u32 = 4;
-                const MAX_AMMO: u32 = 20;
-                **ammo = (**ammo + AMMO_PER_CROP_CELL).min(MAX_AMMO);
-            }
+            const AMMO_PER_CROP_CELL: u32 = 4;
+            const MAX_AMMO: u32 = 20;
+            **ammo = ((**ammo + AMMO_PER_CROP_CELL) * harvest_count).min(MAX_AMMO);
         }
     }
 
@@ -105,7 +107,7 @@ impl Plugin {
                 })
                 .insert(Moving { speed: 10.0 })
                 .insert(Bullet::default())
-                .insert(DespawnTimer(Timer::new(Duration::from_secs(1), false)))
+                .insert(DespawnTimer(Timer::new(Duration::from_secs(5), false)))
                 .insert(Name::from("Bullet"));
         }
     }
