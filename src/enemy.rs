@@ -22,6 +22,8 @@ impl Default for SpawnTimer {
     }
 }
 
+pub struct PlayerHit;
+
 #[derive(Default)]
 pub struct Plugin;
 
@@ -29,9 +31,11 @@ impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AssetTable>()
             .init_resource::<SpawnTimer>()
+            .add_event::<PlayerHit>()
             .add_startup_system(Self::load_assets)
             .add_system(Self::spawn.with_run_criteria(Self::should_spawn))
-            .add_system(Self::aim);
+            .add_system(Self::aim)
+            .add_system_to_stage(CoreStage::PostUpdate, Self::hit_combine);
     }
 }
 
@@ -64,6 +68,23 @@ impl Plugin {
                 let direction = separation.normalize();
                 let angle = Vec2::X.angle_between(direction);
                 enemy_transform.rotation = Quat::from_axis_angle(Vec3::Z, angle);
+            }
+        }
+    }
+
+    fn hit_combine(
+        mut events: EventWriter<PlayerHit>,
+        combines: Query<&GlobalTransform, With<Harvester>>,
+        enemies: Query<&GlobalTransform, With<Enemy>>,
+    ) {
+        for combine in &combines {
+            for enemy in &enemies {
+                let distance_squared = (combine.translation().truncate()
+                    - enemy.translation().truncate())
+                .length_squared();
+                if distance_squared < 0.1 {
+                    events.send(PlayerHit);
+                }
             }
         }
     }
