@@ -9,10 +9,13 @@ description = ""
 categories = []
 keywords = []
 
+[package.metadata.cargo-all-features]
+skip_optional_dependencies = true
+
 [features]
 default = []
 dev = ["bevy/dynamic"]
-inspector = ["bevy-inspector-egui"]
+inspector = ["dev", "bevy-inspector-egui"]
 
 [dependencies]
 bevy = { version = "0.8.0", default-features = false, features = ["animation", "bevy_asset", "bevy_audio", "bevy_scene", "bevy_winit", "render", "png", "vorbis", "x11"] }
