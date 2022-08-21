@@ -83,26 +83,33 @@ impl Plugin {
     }
 
     fn spawn(mut commands: Commands, mut field: ResMut<Field>, asset_index: Res<AssetTable>) {
-        for x in 0..field.width {
-            for y in 0..field.height {
-                let position = Position(UVec2::new(x, y).as_ivec2());
-                let mut entity = commands.spawn_bundle(SpriteSheetBundle {
-                    transform: Transform::from_xyz(x as f32, y as f32, 0.0),
-                    sprite: TextureAtlasSprite {
-                        custom_size: Some(Vec2::ONE),
-                        ..Default::default()
-                    },
-                    texture_atlas: asset_index.crop.clone(),
-                    ..Default::default()
-                });
-                entity.insert(position).insert(Cell::Crop);
+        commands
+            .spawn_bundle(TransformBundle::default())
+            .insert_bundle(VisibilityBundle::default())
+            .insert(Name::from("Field"))
+            .with_children(|field_commands| {
+                for x in 0..field.width {
+                    for y in 0..field.height {
+                        let position = Position(UVec2::new(x, y).as_ivec2());
+                        let entity = field_commands
+                            .spawn_bundle(SpriteSheetBundle {
+                                transform: Transform::from_xyz(x as f32, y as f32, 0.0),
+                                sprite: TextureAtlasSprite {
+                                    custom_size: Some(Vec2::ONE),
+                                    ..Default::default()
+                                },
+                                texture_atlas: asset_index.crop.clone(),
+                                ..Default::default()
+                            })
+                            .insert(position)
+                            .insert(Cell::Crop)
+                            .insert(Name::from(format!("Cell ({x},{y})")))
+                            .id();
 
-                #[cfg(feature = "inspector")]
-                entity.insert(Name::from(format!("Cell ({x},{y})")));
-
-                field.map.insert(position, entity.id());
-            }
-        }
+                        field.map.insert(position, entity);
+                    }
+                }
+            });
     }
 
     fn load_assets(

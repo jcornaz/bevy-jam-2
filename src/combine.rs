@@ -112,23 +112,20 @@ impl Plugin {
         ));
 
         let position = field.center();
-        let mut entity = commands.spawn_bundle(SpriteSheetBundle {
-            texture_atlas,
-            transform: Transform::from_translation(position.as_vec2().extend(1.0)),
-            sprite: TextureAtlasSprite {
-                custom_size: Some(Vec2::ONE),
+        commands
+            .spawn_bundle(SpriteSheetBundle {
+                texture_atlas,
+                transform: Transform::from_translation(position.as_vec2().extend(1.0)),
+                sprite: TextureAtlasSprite {
+                    custom_size: Some(Vec2::ONE),
+                    ..Default::default()
+                },
                 ..Default::default()
-            },
-            ..Default::default()
-        });
-
-        entity
+            })
             .insert(position)
             .insert(Direction(IVec2::X))
             .insert(Control::default())
-            .insert(MovementTimer::default());
-
-        #[cfg(feature = "inspector")]
-        entity.insert(Name::from("Combine"));
+            .insert(MovementTimer::default())
+            .insert(Name::from("Combine"));
     }
 }
