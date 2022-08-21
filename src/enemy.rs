@@ -11,7 +11,7 @@ struct AssetTable {
 }
 
 #[derive(Debug, Clone, Copy, Component)]
-struct Enemy;
+pub struct Enemy;
 
 #[derive(Debug, Deref, DerefMut)]
 struct SpawnTimer(Timer);

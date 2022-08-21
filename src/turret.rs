@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::{ecs::schedule::ShouldRun, prelude::*};
 
-use crate::{combine::Harvester, mouse::Cursor, Moving};
+use crate::{combine::Harvester, enemy::Enemy, mouse::Cursor, Moving};
 
 #[derive(Debug, Default)]
 struct AssetTable {
@@ -36,7 +36,8 @@ impl bevy::prelude::Plugin for Plugin {
             .add_startup_system(Self::spawn_turret)
             .add_system_to_stage(CoreStage::PreUpdate, Self::aim)
             .add_system(Self::shoot.with_run_criteria(Self::should_shoot))
-            .add_system(Self::despawn_bullets);
+            .add_system(Self::despawn_bullets)
+            .add_system(Self::kill_enemy);
     }
 }
 
@@ -89,6 +90,23 @@ impl Plugin {
 
             turret_transform.rotation =
                 Quat::from_axis_angle(Vec3::Z, Vec2::X.angle_between(direction));
+        }
+    }
+
+    fn kill_enemy(
+        mut commands: Commands,
+        bullets: Query<&GlobalTransform, With<Bullet>>,
+        enemies: Query<(Entity, &GlobalTransform), With<Enemy>>,
+    ) {
+        for bullet in &bullets {
+            for (enemy_entity, enemy) in &enemies {
+                let dist_squared = (bullet.translation().truncate()
+                    - enemy.translation().truncate())
+                .length_squared();
+                if dist_squared < 0.3 {
+                    commands.entity(enemy_entity).despawn_recursive();
+                }
+            }
         }
     }
 
