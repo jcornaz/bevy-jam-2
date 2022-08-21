@@ -10,8 +10,18 @@ struct AssetTable {
     bullet: Handle<TextureAtlas>,
 }
 
-#[derive(Debug, Clone, Copy, Default, Component)]
-struct Turret;
+#[derive(Debug, Clone, Component)]
+struct Turret {
+    cool_down: Timer,
+}
+
+impl Default for Turret {
+    fn default() -> Self {
+        Self {
+            cool_down: Timer::new(Duration::ZERO, false),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Component, Default)]
 struct Bullet;
@@ -25,21 +35,31 @@ impl bevy::prelude::Plugin for Plugin {
             .add_startup_system_to_stage(StartupStage::PreStartup, Self::load_assets)
             .add_startup_system(Self::spawn_turret)
             .add_system_to_stage(CoreStage::PreUpdate, Self::aim)
-            .add_system(Self::shoot.with_run_criteria(Self::should_shoot))
+            .add_system(Self::spawn_bullet.with_run_criteria(Self::shoot))
             .add_system(Self::kill_enemy);
     }
 }
 
 impl Plugin {
-    fn should_shoot(input: Res<Input<MouseButton>>) -> ShouldRun {
-        if input.just_pressed(MouseButton::Left) {
+    fn shoot(
+        input: Res<Input<MouseButton>>,
+        mut turrets: Query<&mut Turret>,
+        time: Res<Time>,
+    ) -> ShouldRun {
+        let mut turret = match turrets.get_single_mut() {
+            Ok(t) => t,
+            Err(_) => return ShouldRun::No,
+        };
+        turret.cool_down.tick(time.delta());
+        if turret.cool_down.finished() && input.pressed(MouseButton::Left) {
+            turret.cool_down = Timer::new(Duration::from_secs_f32(0.2), false);
             ShouldRun::Yes
         } else {
             ShouldRun::No
         }
     }
 
-    fn shoot(
+    fn spawn_bullet(
         mut commands: Commands,
         turrets: Query<&Transform, With<Turret>>,
         assets: Res<AssetTable>,
@@ -110,7 +130,7 @@ impl Plugin {
                 },
                 ..Default::default()
             })
-            .insert(Turret)
+            .insert(Turret::default())
             .insert(Name::from("Turret"));
     }
 
