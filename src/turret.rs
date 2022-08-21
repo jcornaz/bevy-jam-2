@@ -4,9 +4,10 @@ use bevy::{ecs::schedule::ShouldRun, prelude::*, time::FixedTimestep};
 
 use crate::{
     combine::{Harvested, Harvester},
+    despawn::DespawnTimer,
     enemy::Enemy,
     mouse::Cursor,
-    DespawnTimer, Moving,
+    movement::Moving,
 };
 
 #[derive(Debug, Default)]
@@ -107,7 +108,7 @@ impl Plugin {
                 })
                 .insert(Moving { speed: 10.0 })
                 .insert(Bullet::default())
-                .insert(DespawnTimer(Timer::new(Duration::from_secs(5), false)))
+                .insert(DespawnTimer::new(Duration::from_secs(5)))
                 .insert(Name::from("Bullet"));
         }
     }

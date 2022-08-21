@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::{ecs::schedule::ShouldRun, prelude::*};
 use rand::{thread_rng, Rng};
 
-use crate::{combine::Harvester, field::Field, Moving};
+use crate::{combine::Harvester, field::Field, movement::Moving};
 
 #[derive(Debug, Clone, Default)]
 struct AssetTable {
