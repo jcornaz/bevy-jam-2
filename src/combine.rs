@@ -4,18 +4,38 @@ use bevy::prelude::*;
 
 use crate::field::{Cell, Field, Position};
 
-#[derive(Debug, Clone, Copy, Component, Deref, DerefMut)]
-struct Direction(IVec2);
+#[derive(Debug, Clone, Copy, Component)]
+struct Harvester;
 
-#[derive(Debug, Clone, Copy, Component, Default, Deref, DerefMut)]
-struct Control(IVec2);
+#[derive(Debug, Clone, Component)]
+struct Movement {
+    direction: IVec2,
+    control: Option<IVec2>,
+    timer: Timer,
+}
 
-#[derive(Debug, Clone, Component, Deref, DerefMut)]
-struct MovementTimer(Timer);
+impl Movement {
+    fn new(direction: IVec2) -> Self {
+        Self {
+            direction,
+            control: None,
+            timer: Timer::new(Duration::from_secs(1), true),
+        }
+    }
 
-impl Default for MovementTimer {
-    fn default() -> Self {
-        Self(Timer::new(Duration::from_secs(1), true))
+    fn world_coord(&self, pos: Position) -> Vec2 {
+        pos.as_vec2() + (self.direction.as_vec2() * self.timer.elapsed_secs())
+    }
+
+    fn update(&mut self, pos: &mut Position, delta: Duration) {
+        self.timer.tick(delta);
+        if self.timer.just_finished() {
+            **pos += self.direction;
+            if let Some(control) = self.control {
+                self.direction = control;
+                self.control = None;
+            }
+        }
     }
 }
 
@@ -35,18 +55,21 @@ impl bevy::prelude::Plugin for Plugin {
 impl Plugin {
     fn harvest(
         field: ResMut<Field>,
-        combine: Query<&Position, (Changed<Position>, With<Control>)>,
+        combine: Query<&Transform, With<Harvester>>,
         mut cells: Query<&mut Cell>,
     ) {
-        for position in combine.iter().filter_map(|&p| field.get(p)) {
+        for position in combine
+            .iter()
+            .filter_map(|&t| field.get_at(t.translation.truncate()))
+        {
             if let Ok(mut cell) = cells.get_mut(position) {
                 cell.harvest();
             }
         }
     }
 
-    fn control(input: Res<Input<KeyCode>>, mut combine: Query<(&mut Control, &Direction)>) {
-        for (mut control, &direction) in combine.iter_mut() {
+    fn control(input: Res<Input<KeyCode>>, mut combine: Query<&mut Movement>) {
+        for mut movement in combine.iter_mut() {
             let asked = if input.pressed(KeyCode::Up) || input.pressed(KeyCode::W) {
                 IVec2::Y
             } else if input.pressed(KeyCode::Down) || input.pressed(KeyCode::S) {
@@ -59,41 +82,25 @@ impl Plugin {
                 return;
             };
 
-            if asked != -*direction {
-                **control = asked;
+            if asked != -movement.direction {
+                movement.control = Some(asked);
             }
         }
     }
 
     fn movement(
         time: Res<Time>,
-        mut combine: Query<(
-            &mut MovementTimer,
-            &mut Transform,
-            &mut Position,
-            &mut Direction,
-            &mut Control,
-        )>,
+        mut combine: Query<(&mut Transform, &mut Movement, &mut Position)>,
     ) {
-        for (mut timer, mut transform, mut position, mut direction, mut control) in
-            combine.iter_mut()
-        {
-            timer.tick(time.delta());
-            if timer.just_finished() {
-                **position += **direction;
-                if control.x != 0 || control.y != 0 {
-                    **direction = **control;
-                    *control = Control::default();
-                }
-            }
-            transform.translation = position.as_vec2().extend(transform.translation.z)
-                + (direction.as_vec2() * timer.elapsed_secs()).extend(0.0);
+        for (mut transform, mut movement, mut pos) in combine.iter_mut() {
+            movement.update(&mut pos, time.delta());
+            transform.translation = movement.world_coord(*pos).extend(transform.translation.z);
         }
     }
 
-    fn rotate_sprite(mut combines: Query<(&mut Transform, &Direction), Changed<Direction>>) {
-        for (mut transform, &direction) in combines.iter_mut() {
-            let direction = direction.as_vec2();
+    fn rotate_sprite(mut combines: Query<(&mut Transform, &Movement)>) {
+        for (mut transform, movement) in combines.iter_mut() {
+            let direction = movement.direction.as_vec2();
             transform.rotation = Quat::from_axis_angle(Vec3::Z, Vec2::X.angle_between(direction))
         }
     }
@@ -123,9 +130,8 @@ impl Plugin {
                 ..Default::default()
             })
             .insert(position)
-            .insert(Direction(IVec2::X))
-            .insert(Control::default())
-            .insert(MovementTimer::default())
+            .insert(Harvester)
+            .insert(Movement::new(IVec2::X))
             .insert(Name::from("Combine"));
     }
 }

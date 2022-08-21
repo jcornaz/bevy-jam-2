@@ -38,6 +38,10 @@ impl Field {
     pub fn get(&self, position: Position) -> Option<Entity> {
         self.map.get(&position).copied()
     }
+
+    pub fn get_at(&self, world_coord: Vec2) -> Option<Entity> {
+        self.get(Position(world_coord.round().as_ivec2()))
+    }
 }
 
 #[derive(Debug, Default, Component, Clone, Copy, Deref, DerefMut, Eq, PartialEq, Hash)]
