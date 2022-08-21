@@ -18,7 +18,7 @@ impl Plugin {
             .center()
             .as_vec2()
             .extend(camera.transform.translation.z);
-        camera.transform.scale = Vec3::new(0.01, 0.01, 1.0);
+        camera.transform.scale = Vec3::new(0.02, 0.02, 1.0);
         commands.spawn_bundle(camera);
     }
 }

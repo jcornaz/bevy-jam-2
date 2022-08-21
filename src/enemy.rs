@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::{ecs::schedule::ShouldRun, prelude::*};
 use rand::{thread_rng, Rng};
 
-use crate::field::Field;
+use crate::{combine::Harvester, field::Field};
 
 #[derive(Debug, Clone, Default)]
 struct AssetTable {
@@ -18,7 +18,7 @@ struct SpawnTimer(Timer);
 
 impl Default for SpawnTimer {
     fn default() -> Self {
-        Self(Timer::new(Duration::from_secs_f64(0.5), true))
+        Self(Timer::new(Duration::from_secs(1), true))
     }
 }
 
@@ -30,7 +30,8 @@ impl bevy::prelude::Plugin for Plugin {
         app.init_resource::<AssetTable>()
             .init_resource::<SpawnTimer>()
             .add_startup_system(Self::load_assets)
-            .add_system(Self::spawn.with_run_criteria(Self::should_spawn));
+            .add_system(Self::spawn.with_run_criteria(Self::should_spawn))
+            .add_system(Self::movement);
     }
 }
 
@@ -44,7 +45,36 @@ impl Plugin {
         }
     }
 
-    fn spawn(mut commands: Commands, field: Res<Field>) {
+    fn movement(
+        time: Res<Time>,
+        mut enemies: Query<&mut Transform, With<Enemy>>,
+        combines: Query<&Transform, (With<Harvester>, Without<Enemy>)>,
+    ) {
+        /// Speed, expressed in tile-per-seconds
+        const SPEED: f32 = 3.0;
+        let delta = SPEED * time.delta_seconds();
+
+        let combine_transform = match combines.get_single() {
+            Ok(t) => t,
+            Err(_) => {
+                error!("Combine not found");
+                return;
+            }
+        };
+
+        for mut enemy_transform in enemies.iter_mut() {
+            let separation =
+                combine_transform.translation.truncate() - enemy_transform.translation.truncate();
+            if separation.length_squared() > 0.2 {
+                enemy_transform.translation += separation
+                    .normalize()
+                    .clamp_length(delta, delta)
+                    .extend(0.0);
+            }
+        }
+    }
+
+    fn spawn(mut commands: Commands, field: Res<Field>, assets: Res<AssetTable>) {
         let mut rng = thread_rng();
         let pos = match (rng.gen_bool(0.5), rng.gen_bool(0.5)) {
             (true, true) => IVec2::new(-1, rng.gen_range(0..field.height) as i32),
@@ -55,7 +85,8 @@ impl Plugin {
 
         commands
             .spawn_bundle(SpriteSheetBundle {
-                transform: Transform::from_translation(pos.as_vec2().extend(2.0)),
+                transform: Transform::from_translation(pos.as_vec2().extend(3.0)),
+                texture_atlas: assets.bird.clone(),
                 sprite: TextureAtlasSprite {
                     custom_size: Some(Vec2::ONE),
                     ..Default::default()

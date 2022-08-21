@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::field::{Cell, Field, Position};
 
 #[derive(Debug, Clone, Copy, Component)]
-struct Harvester;
+pub struct Harvester;
 
 #[derive(Debug, Clone, Component)]
 struct Movement {
