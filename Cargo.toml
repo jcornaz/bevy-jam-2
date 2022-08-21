@@ -11,6 +11,7 @@ keywords = []
 
 [features]
 default = []
+dev = ["bevy/dynamic"]
 inspector = ["bevy-inspector-egui"]
 
 [dependencies]
