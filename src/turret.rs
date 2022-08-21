@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::combine::Harvester;
+use crate::{combine::Harvester, mouse::Cursor};
 
 #[derive(Debug, Default)]
 struct AssetTable {
@@ -8,9 +8,8 @@ struct AssetTable {
     bullet: Handle<TextureAtlas>,
 }
 
-/// Marker component, indicating the combine is equiped with a turret
 #[derive(Debug, Clone, Copy, Default, Component)]
-struct HasTurret;
+struct Turret;
 
 #[derive(Default)]
 pub struct Plugin;
@@ -18,35 +17,46 @@ pub struct Plugin;
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AssetTable>()
-            .add_startup_system(Self::load_assets)
-            .add_system_to_stage(CoreStage::PreUpdate, Self::spawn_turret);
+            .add_startup_system_to_stage(StartupStage::PreStartup, Self::load_assets)
+            .add_startup_system(Self::spawn_turret)
+            .add_system_to_stage(CoreStage::PreUpdate, Self::aim);
     }
 }
 
 impl Plugin {
-    fn spawn_turret(
-        mut commands: Commands,
-        combines: Query<Entity, (With<Harvester>, Without<HasTurret>)>,
-        assets: Res<AssetTable>,
+    fn aim(
+        cursor: Res<Cursor>,
+        mut turrets: Query<&mut Transform, (With<Turret>, Without<Harvester>)>,
+        combines: Query<&Transform, With<Harvester>>,
     ) {
-        for combine_entity in &combines {
-            commands
-                .entity(combine_entity)
-                .insert(HasTurret)
-                .with_children(|children| {
-                    children
-                        .spawn_bundle(SpriteSheetBundle {
-                            transform: Transform::from_translation(Vec3::Z),
-                            texture_atlas: assets.turret.clone(),
-                            sprite: TextureAtlasSprite {
-                                custom_size: Some(Vec2::ONE),
-                                ..Default::default()
-                            },
-                            ..Default::default()
-                        })
-                        .insert(Name::from("Turret"));
-                });
+        for mut turret_transform in &mut turrets {
+            if let Ok(combine_transform) = combines.get_single() {
+                turret_transform.translation = combine_transform.translation + Vec3::Z;
+            }
+
+            let direction =
+                match (**cursor - turret_transform.translation.truncate()).try_normalize() {
+                    Some(d) => d,
+                    None => continue,
+                };
+
+            turret_transform.rotation =
+                Quat::from_axis_angle(Vec3::Z, Vec2::X.angle_between(direction));
         }
+    }
+
+    fn spawn_turret(mut commands: Commands, assets: Res<AssetTable>) {
+        commands
+            .spawn_bundle(SpriteSheetBundle {
+                texture_atlas: assets.turret.clone(),
+                sprite: TextureAtlasSprite {
+                    custom_size: Some(Vec2::ONE),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .insert(Turret)
+            .insert(Name::from("Turret"));
     }
 
     fn load_assets(
