@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::{ecs::schedule::ShouldRun, prelude::*};
 
-use crate::{combine::Harvester, enemy::Enemy, mouse::Cursor, Moving};
+use crate::{combine::Harvester, enemy::Enemy, mouse::Cursor, DespawnTimer, Moving};
 
 #[derive(Debug, Default)]
 struct AssetTable {
@@ -13,18 +13,8 @@ struct AssetTable {
 #[derive(Debug, Clone, Copy, Default, Component)]
 struct Turret;
 
-#[derive(Debug, Clone, Component)]
-struct Bullet {
-    timer: Timer,
-}
-
-impl Default for Bullet {
-    fn default() -> Self {
-        Self {
-            timer: Timer::new(Duration::from_secs(10), false),
-        }
-    }
-}
+#[derive(Debug, Clone, Component, Default)]
+struct Bullet;
 
 #[derive(Default)]
 pub struct Plugin;
@@ -36,7 +26,6 @@ impl bevy::prelude::Plugin for Plugin {
             .add_startup_system(Self::spawn_turret)
             .add_system_to_stage(CoreStage::PreUpdate, Self::aim)
             .add_system(Self::shoot.with_run_criteria(Self::should_shoot))
-            .add_system(Self::despawn_bullets)
             .add_system(Self::kill_enemy);
     }
 }
@@ -68,6 +57,7 @@ impl Plugin {
                 })
                 .insert(Moving { speed: 10.0 })
                 .insert(Bullet::default())
+                .insert(DespawnTimer(Timer::new(Duration::from_secs(1), false)))
                 .insert(Name::from("Bullet"));
         }
     }
@@ -106,19 +96,6 @@ impl Plugin {
                 if dist_squared < 0.3 {
                     commands.entity(enemy_entity).despawn_recursive();
                 }
-            }
-        }
-    }
-
-    fn despawn_bullets(
-        mut commands: Commands,
-        mut bullets: Query<(Entity, &mut Bullet)>,
-        time: Res<Time>,
-    ) {
-        for (entity, mut bullet) in &mut bullets {
-            bullet.timer.tick(time.delta());
-            if bullet.timer.finished() {
-                commands.entity(entity).despawn_recursive();
             }
         }
     }
