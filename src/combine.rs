@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::field::{Field, Position};
+use crate::field::{Cell, Field, Position};
 
 #[derive(Debug, Clone, Copy, Component, Deref, DerefMut)]
 struct Direction(IVec2);
@@ -34,11 +34,14 @@ impl bevy::prelude::Plugin for Plugin {
 
 impl Plugin {
     fn harvest(
-        mut field: ResMut<Field>,
+        field: ResMut<Field>,
         combine: Query<&Position, (Changed<Position>, With<Control>)>,
+        mut cells: Query<&mut Cell>,
     ) {
-        for &position in &combine {
-            field.harvest(position);
+        for position in combine.iter().filter_map(|&p| field.get(p)) {
+            if let Ok(mut cell) = cells.get_mut(position) {
+                cell.harvest();
+            }
         }
     }
 

@@ -1,30 +1,30 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 
 #[derive(Debug, Clone)]
 pub struct Field {
     pub(crate) width: u32,
     pub(crate) height: u32,
-    #[allow(unused)]
-    cells: Vec<Cell>,
+    map: HashMap<Position, Entity>,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Component)]
 pub enum Cell {
     Crop,
     Harvested,
 }
 
-#[derive(Debug, Clone, Copy, Component)]
-struct CellEntity;
+impl Cell {
+    pub fn harvest(&mut self) {
+        *self = Cell::Harvested;
+    }
+}
 
 impl Field {
     pub fn new(width: u32, height: u32) -> Self {
-        let mut cells = Vec::new();
-        cells.resize((width * height) as usize, Cell::Crop);
         Self {
             width,
             height,
-            cells,
+            map: HashMap::new(),
         }
     }
 
@@ -35,30 +35,12 @@ impl Field {
         ))
     }
 
-    fn get(&self, position: Position) -> Option<Cell> {
-        self.index_of(position)
-            .and_then(|i| self.cells.get(i))
-            .copied()
-    }
-
-    pub fn harvest(&mut self, position: Position) {
-        if let Some(cell) = self.index_of(position).and_then(|i| self.cells.get_mut(i)) {
-            *cell = Cell::Harvested;
-        }
-    }
-
-    fn index_of(&self, Position(v): Position) -> Option<usize> {
-        if v.x < 0 || v.x >= self.width as i32 {
-            return None;
-        }
-        if v.y < 0 || v.y >= self.height as i32 {
-            return None;
-        }
-        Some((v.y as usize * self.width as usize) + v.x as usize)
+    pub fn get(&self, position: Position) -> Option<Entity> {
+        self.map.get(&position).copied()
     }
 }
 
-#[derive(Debug, Default, Component, Clone, Copy, Deref, DerefMut)]
+#[derive(Debug, Default, Component, Clone, Copy, Deref, DerefMut, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "inspector", derive(bevy_inspector_egui::Inspectable))]
 pub struct Position(pub(crate) IVec2);
 
@@ -76,7 +58,7 @@ impl bevy::prelude::Plugin for Plugin {
         app.insert_resource(Field::new(31, 15))
             .init_resource::<AssetTable>()
             .add_startup_system_to_stage(StartupStage::PreStartup, Self::load_assets)
-            .add_startup_system(Self::spawn_cell_entities)
+            .add_startup_system(Self::spawn)
             .add_system_to_stage(CoreStage::PostUpdate, Self::update_sprite);
 
         #[cfg(feature = "inspector")]
@@ -89,30 +71,21 @@ impl bevy::prelude::Plugin for Plugin {
 
 impl Plugin {
     fn update_sprite(
-        field: Res<Field>,
         assets: Res<AssetTable>,
-        mut cells: Query<(&mut Handle<TextureAtlas>, &Position), With<CellEntity>>,
+        mut cells: Query<(&mut Handle<TextureAtlas>, &Cell), Changed<Cell>>,
     ) {
-        if !field.is_changed() {
-            return;
-        }
-
-        for (mut cell, pos) in &mut cells {
-            *cell = match field.get(*pos) {
-                Some(Cell::Crop) => assets.crop.clone(),
-                Some(Cell::Harvested) => assets.harvested.clone(),
-                None => continue,
+        for (mut handle, &cell) in &mut cells {
+            *handle = match cell {
+                Cell::Crop => assets.crop.clone(),
+                Cell::Harvested => assets.harvested.clone(),
             }
         }
     }
 
-    fn spawn_cell_entities(
-        mut commands: Commands,
-        field: Res<Field>,
-        asset_index: Res<AssetTable>,
-    ) {
+    fn spawn(mut commands: Commands, mut field: ResMut<Field>, asset_index: Res<AssetTable>) {
         for x in 0..field.width {
             for y in 0..field.height {
+                let position = Position(UVec2::new(x, y).as_ivec2());
                 let mut entity = commands.spawn_bundle(SpriteSheetBundle {
                     transform: Transform::from_xyz(x as f32, y as f32, 0.0),
                     sprite: TextureAtlasSprite {
@@ -122,12 +95,12 @@ impl Plugin {
                     texture_atlas: asset_index.crop.clone(),
                     ..Default::default()
                 });
-                entity
-                    .insert(Position(UVec2::new(x, y).as_ivec2()))
-                    .insert(CellEntity);
+                entity.insert(position).insert(Cell::Crop);
 
                 #[cfg(feature = "inspector")]
                 entity.insert(Name::from(format!("Cell ({x},{y})")));
+
+                field.map.insert(position, entity.id());
             }
         }
     }
