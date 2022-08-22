@@ -52,8 +52,8 @@ pub struct Plugin;
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<Harvested>()
-            .add_enter_system(GameState::Playing, despawn::<Harvester>)
-            .add_enter_system(GameState::Playing, Self::spawn)
+            .add_enter_system(GameState::Ready, despawn::<Harvester>)
+            .add_enter_system(GameState::Ready, Self::spawn)
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(GameState::Playing)

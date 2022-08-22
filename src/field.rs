@@ -16,6 +16,9 @@ pub enum Cell {
     Harvested,
 }
 
+#[derive(Component)]
+struct CellGroup;
+
 impl Cell {
     pub fn harvest(&mut self) -> bool {
         match self {
@@ -71,8 +74,9 @@ impl bevy::prelude::Plugin for Plugin {
         app.insert_resource(Field::new(31, 15))
             .init_resource::<AssetTable>()
             .add_startup_system(Self::load_assets)
-            .add_enter_system(GameState::Playing, despawn::despawn::<Cell>)
-            .add_enter_system(GameState::Playing, Self::spawn)
+            .add_enter_system(GameState::Ready, despawn::despawn::<Cell>)
+            .add_enter_system(GameState::Ready, despawn::despawn::<CellGroup>)
+            .add_enter_system(GameState::Ready, Self::spawn)
             .add_system_to_stage(
                 CoreStage::PostUpdate,
                 Self::update_sprite.run_in_state(GameState::Playing),
@@ -104,6 +108,7 @@ impl Plugin {
             .spawn_bundle(TransformBundle::default())
             .insert_bundle(VisibilityBundle::default())
             .insert(Name::from("Field"))
+            .insert(CellGroup)
             .with_children(|field_commands| {
                 for x in 0..field.width {
                     for y in 0..field.height {

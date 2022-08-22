@@ -37,8 +37,8 @@ impl bevy::prelude::Plugin for Plugin {
             .init_resource::<SpawnTimer>()
             .add_event::<PlayerHit>()
             .add_startup_system(Self::load_assets)
-            .add_enter_system(GameState::Playing, despawn::<Enemy>)
-            .add_exit_system(GameState::Playing, Self::stop)
+            .add_exit_system(GameState::GameOver, despawn::<Enemy>)
+            .add_enter_system(GameState::GameOver, Self::stop)
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(GameState::Playing)
