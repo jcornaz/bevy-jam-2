@@ -1,13 +1,15 @@
 use std::time::Duration;
 
-use bevy::{ecs::schedule::ShouldRun, prelude::*, time::FixedTimestep};
+use bevy::prelude::*;
+use iyes_loopless::prelude::*;
 
 use crate::{
     combine::{Harvested, Harvester},
-    despawn::DespawnTimer,
+    despawn::{despawn, DespawnTimer},
     enemy::Enemy,
     mouse::Cursor,
     movement::Moving,
+    GameState,
 };
 
 #[derive(Debug, Default)]
@@ -42,17 +44,29 @@ impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AssetTable>()
             .init_resource::<Ammo>()
-            .add_startup_system_to_stage(StartupStage::PreStartup, Self::load_assets)
-            .add_startup_system(Self::spawn_turret)
-            .add_system_to_stage(CoreStage::PreUpdate, Self::aim)
-            .add_system(Self::spawn_bullet.with_run_criteria(Self::shoot))
-            .add_system(Self::kill_enemy)
-            .add_system_to_stage(CoreStage::PostUpdate, Self::recharge)
-            .add_system(Self::log_ammo.with_run_criteria(FixedTimestep::step(1.0)));
+            .add_startup_system(Self::load_assets)
+            .add_enter_system(GameState::Playing, despawn::<Turret>)
+            .add_enter_system(GameState::Playing, Self::spawn_turret)
+            .add_system_to_stage(
+                CoreStage::PreUpdate,
+                Self::aim.run_in_state(GameState::Playing),
+            )
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::Playing)
+                    .with_system(Self::spawn_bullet.run_if(Self::shoot))
+                    .with_system(Self::kill_enemy)
+                    .into(),
+            )
+            .add_system_to_stage(
+                CoreStage::PostUpdate,
+                Self::recharge.run_in_state(GameState::Playing),
+            );
     }
 }
 
 impl Plugin {
+    #[allow(unused)]
     fn log_ammo(ammos: Query<&Ammo>) {
         for ammo in &ammos {
             info!("Ammo: {:?}", **ammo);
@@ -75,18 +89,18 @@ impl Plugin {
         input: Res<Input<MouseButton>>,
         mut turrets: Query<(&mut Turret, &mut Ammo)>,
         time: Res<Time>,
-    ) -> ShouldRun {
+    ) -> bool {
         let (mut turret, mut ammo) = match turrets.get_single_mut() {
             Ok(t) => t,
-            Err(_) => return ShouldRun::No,
+            Err(_) => return false,
         };
         turret.cool_down.tick(time.delta());
         if turret.cool_down.finished() && input.pressed(MouseButton::Left) && **ammo > 0 {
             **ammo -= 1;
             turret.cool_down = Timer::new(Duration::from_secs_f32(0.2), false);
-            ShouldRun::Yes
+            true
         } else {
-            ShouldRun::No
+            false
         }
     }
 

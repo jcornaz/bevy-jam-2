@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 use rand::{thread_rng, Rng};
 
-use crate::{combine::Harvester, field::Field, movement::Moving, GameState};
+use crate::{combine::Harvester, despawn::despawn, field::Field, movement::Moving, GameState};
 
 #[derive(Debug, Clone, Default)]
 struct AssetTable {
@@ -37,6 +37,8 @@ impl bevy::prelude::Plugin for Plugin {
             .init_resource::<SpawnTimer>()
             .add_event::<PlayerHit>()
             .add_startup_system(Self::load_assets)
+            .add_enter_system(GameState::Playing, despawn::<Enemy>)
+            .add_exit_system(GameState::Playing, Self::stop)
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(GameState::Playing)
@@ -50,6 +52,12 @@ impl bevy::prelude::Plugin for Plugin {
 }
 
 impl Plugin {
+    fn stop(mut commands: Commands, enemies: Query<Entity, (With<Enemy>, With<Moving>)>) {
+        for enemy in &enemies {
+            commands.entity(enemy).remove::<Moving>();
+        }
+    }
+
     fn cool_down(mut timer: ResMut<SpawnTimer>, time: Res<Time>) {
         timer.tick(time.delta());
     }
