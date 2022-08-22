@@ -1,8 +1,13 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use iyes_loopless::prelude::*;
 
-use crate::field::{Cell, Field, Position};
+use crate::{
+    despawn::despawn,
+    field::{Cell, Field, Position},
+    GameState,
+};
 
 #[derive(Debug, Clone, Copy, Component)]
 pub struct Harvester;
@@ -46,12 +51,18 @@ pub struct Plugin;
 
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(Self::spawn)
-            .add_event::<Harvested>()
-            .add_system(Self::movement)
-            .add_system(Self::control)
-            .add_system(Self::harvest)
-            .add_system_to_stage(CoreStage::PostUpdate, Self::rotate_sprite);
+        app.add_event::<Harvested>()
+            .add_enter_system(GameState::Playing, despawn::<Harvester>)
+            .add_enter_system(GameState::Playing, Self::spawn)
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::Playing)
+                    .with_system(Self::control)
+                    .with_system(Self::movement)
+                    .with_system(Self::harvest)
+                    .with_system(Self::rotate_sprite)
+                    .into(),
+            );
     }
 }
 

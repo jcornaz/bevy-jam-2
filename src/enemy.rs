@@ -1,9 +1,10 @@
 use std::time::Duration;
 
-use bevy::{ecs::schedule::ShouldRun, prelude::*};
+use bevy::prelude::*;
+use iyes_loopless::prelude::*;
 use rand::{thread_rng, Rng};
 
-use crate::{combine::Harvester, field::Field, movement::Moving};
+use crate::{combine::Harvester, field::Field, movement::Moving, GameState};
 
 #[derive(Debug, Clone, Default)]
 struct AssetTable {
@@ -27,26 +28,34 @@ pub struct PlayerHit;
 #[derive(Default)]
 pub struct Plugin;
 
+#[derive(Debug, Clone, Copy, SystemLabel)]
+struct Spawn;
+
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AssetTable>()
             .init_resource::<SpawnTimer>()
             .add_event::<PlayerHit>()
             .add_startup_system(Self::load_assets)
-            .add_system(Self::spawn.with_run_criteria(Self::should_spawn))
-            .add_system(Self::aim)
-            .add_system_to_stage(CoreStage::PostUpdate, Self::hit_combine);
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::Playing)
+                    .with_system(Self::cool_down)
+                    .with_system(Self::spawn.run_if(Self::should_spawn))
+                    .with_system(Self::aim)
+                    .with_system(Self::hit_combine)
+                    .into(),
+            );
     }
 }
 
 impl Plugin {
-    fn should_spawn(mut timer: ResMut<SpawnTimer>, time: Res<Time>) -> ShouldRun {
+    fn cool_down(mut timer: ResMut<SpawnTimer>, time: Res<Time>) {
         timer.tick(time.delta());
-        if timer.just_finished() {
-            ShouldRun::Yes
-        } else {
-            ShouldRun::No
-        }
+    }
+
+    fn should_spawn(timer: Res<SpawnTimer>) -> bool {
+        timer.just_finished()
     }
 
     fn aim(

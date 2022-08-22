@@ -9,6 +9,12 @@ pub fn systems() -> SystemSet {
     SystemSet::new().with_system(after_timeout)
 }
 
+pub fn despawn<C: Component>(mut commands: Commands, entities: Query<Entity, With<C>>) {
+    for entity in &entities {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
 fn after_timeout(
     mut commands: Commands,
     mut bullets: Query<(Entity, &mut DespawnTimer)>,

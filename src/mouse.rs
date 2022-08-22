@@ -1,4 +1,7 @@
 use bevy::{prelude::*, render::camera::RenderTarget};
+use iyes_loopless::prelude::IntoConditionalSystem;
+
+use crate::GameState;
 
 #[derive(Debug, Clone, Default, Deref)]
 pub struct Cursor(Vec2);
@@ -8,8 +11,10 @@ pub struct Plugin;
 
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.init_resource::<Cursor>()
-            .add_system_to_stage(CoreStage::First, Self::track_cursor);
+        app.init_resource::<Cursor>().add_system_to_stage(
+            CoreStage::First,
+            Self::track_cursor.run_in_state(GameState::Playing),
+        );
     }
 }
 

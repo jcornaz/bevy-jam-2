@@ -1,4 +1,7 @@
 use bevy::{prelude::*, utils::HashMap};
+use iyes_loopless::prelude::{AppLooplessStateExt, IntoConditionalSystem};
+
+use crate::{despawn, GameState};
 
 #[derive(Debug, Clone)]
 pub struct Field {
@@ -67,9 +70,13 @@ impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Field::new(31, 15))
             .init_resource::<AssetTable>()
-            .add_startup_system_to_stage(StartupStage::PreStartup, Self::load_assets)
-            .add_startup_system(Self::spawn)
-            .add_system_to_stage(CoreStage::PostUpdate, Self::update_sprite);
+            .add_startup_system(Self::load_assets)
+            .add_enter_system(GameState::Playing, despawn::despawn::<Cell>)
+            .add_enter_system(GameState::Playing, Self::spawn)
+            .add_system_to_stage(
+                CoreStage::PostUpdate,
+                Self::update_sprite.run_in_state(GameState::Playing),
+            );
 
         #[cfg(feature = "inspector")]
         {
