@@ -1,12 +1,13 @@
 use bevy::{prelude::*, render::texture::ImageSettings};
 use enemy::PlayerHit;
-use iyes_loopless::{prelude::AppLooplessStateExt, state::NextState};
+use iyes_loopless::prelude::*;
 
 mod camera;
 mod combine;
 mod despawn;
 mod enemy;
 mod field;
+mod game_over;
 mod mouse;
 mod movement;
 mod turret;
@@ -32,9 +33,10 @@ fn main() {
         .add_plugin(combine::Plugin::default())
         .add_plugin(enemy::Plugin::default())
         .add_plugin(turret::Plugin::default())
+        .add_plugin(game_over::Plugin::default())
         .add_system_set(movement::systems())
         .add_system_set(despawn::systems())
-        .add_system(game_over)
+        .add_system(game_over.run_in_state(GameState::Playing))
         .run();
 }
 
