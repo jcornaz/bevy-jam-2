@@ -74,14 +74,14 @@ impl Plugin {
     }
 
     fn recharge(mut harvests: EventReader<Harvested>, mut ammos: Query<&mut Ammo>) {
-        let harvest_count = harvests.iter().count() as u32;
-        if harvest_count == 0 {
+        const AMMO_PER_CROP_CELL: u32 = 4;
+        const MAX_AMMO: u32 = 20;
+        let delta_ammo = harvests.iter().count() as u32 * AMMO_PER_CROP_CELL;
+        if delta_ammo == 0 {
             return;
         }
         for mut ammo in &mut ammos {
-            const AMMO_PER_CROP_CELL: u32 = 4;
-            const MAX_AMMO: u32 = 20;
-            **ammo = ((**ammo + AMMO_PER_CROP_CELL) * harvest_count).min(MAX_AMMO);
+            **ammo = delta_ammo.min(MAX_AMMO);
         }
     }
 
