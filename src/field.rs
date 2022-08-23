@@ -1,5 +1,6 @@
 use bevy::{prelude::*, utils::HashMap};
-use iyes_loopless::prelude::{AppLooplessStateExt, IntoConditionalSystem};
+use iyes_loopless::prelude::AppLooplessStateExt;
+use noise::{Fbm, NoiseFn};
 
 use crate::{despawn, GameState};
 
@@ -71,16 +72,20 @@ pub struct Plugin;
 
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        let mut noise = Fbm::new();
+        noise.octaves = 3;
+        noise.frequency = 0.5;
+
+        println!("{noise:?}");
+
         app.insert_resource(Field::new(31, 15))
             .init_resource::<AssetTable>()
+            .insert_resource(noise)
             .add_startup_system(Self::load_assets)
             .add_enter_system(GameState::Ready, despawn::despawn::<Cell>)
             .add_enter_system(GameState::Ready, despawn::despawn::<CellGroup>)
             .add_enter_system(GameState::Ready, Self::spawn)
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                Self::update_sprite.run_in_state(GameState::Playing),
-            );
+            .add_system_to_stage(CoreStage::PostUpdate, Self::update_sprite);
 
         #[cfg(feature = "inspector")]
         {
@@ -103,7 +108,12 @@ impl Plugin {
         }
     }
 
-    fn spawn(mut commands: Commands, mut field: ResMut<Field>, asset_index: Res<AssetTable>) {
+    fn spawn(
+        mut commands: Commands,
+        mut field: ResMut<Field>,
+        asset_index: Res<AssetTable>,
+        noise: Res<Fbm>,
+    ) {
         commands
             .spawn_bundle(TransformBundle::default())
             .insert_bundle(VisibilityBundle::default())
@@ -112,6 +122,12 @@ impl Plugin {
             .with_children(|field_commands| {
                 for x in 0..field.width {
                     for y in 0..field.height {
+                        let cell = if noise.get([x as f64, y as f64]) > -0.15 {
+                            Cell::Crop
+                        } else {
+                            Cell::Harvested
+                        };
+
                         let position = Position(UVec2::new(x, y).as_ivec2());
                         let entity = field_commands
                             .spawn_bundle(SpriteSheetBundle {
@@ -124,7 +140,7 @@ impl Plugin {
                                 ..Default::default()
                             })
                             .insert(position)
-                            .insert(Cell::Crop)
+                            .insert(cell)
                             .insert(Name::from(format!("Cell ({x},{y})")))
                             .id();
 
