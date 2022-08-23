@@ -78,9 +78,12 @@ impl Plugin {
             .filter_map(|&t| field.get_at(t.translation.truncate()))
         {
             if let Ok(mut cell) = cells.get_mut(position) {
-                if cell.harvest() {
-                    events.send(Harvested);
+                if let Cell::Crop { level } = *cell {
+                    for _ in 0..level { 
+                        events.send(Harvested);
+                    }
                 }
+                *cell = Cell::Harvested;
             }
         }
     }

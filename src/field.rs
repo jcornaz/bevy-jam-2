@@ -13,24 +13,29 @@ pub struct Field {
 
 #[derive(Debug, Copy, Clone, Component)]
 pub enum Cell {
-    Crop,
+    Crop { level: u8 },
     Harvested,
+}
+
+impl Cell {
+    fn from_noise_value(value: f64) -> Self {
+        println!("{value}");
+        let normalized = (value + 1.0) / 2.0;
+        let level = if normalized < 0.25 {
+            1
+        } else if (0.25..0.5).contains(&normalized) {
+            2
+        } else if (0.5..0.75).contains(&normalized) {
+            3
+        } else {
+            4
+        };
+        Self::Crop { level }
+    }
 }
 
 #[derive(Component)]
 struct CellGroup;
-
-impl Cell {
-    pub fn harvest(&mut self) -> bool {
-        match self {
-            Cell::Crop => {
-                *self = Cell::Harvested;
-                true
-            }
-            Cell::Harvested => false,
-        }
-    }
-}
 
 impl Field {
     pub fn new(width: u32, height: u32) -> Self {
@@ -98,12 +103,21 @@ impl bevy::prelude::Plugin for Plugin {
 impl Plugin {
     fn update_sprite(
         assets: Res<AssetTable>,
-        mut cells: Query<(&mut Handle<TextureAtlas>, &Cell), Changed<Cell>>,
+        mut cells: Query<
+            (&mut Handle<TextureAtlas>, &mut TextureAtlasSprite, &Cell),
+            Changed<Cell>,
+        >,
     ) {
-        for (mut handle, &cell) in &mut cells {
-            *handle = match cell {
-                Cell::Crop => assets.crop.clone(),
-                Cell::Harvested => assets.harvested.clone(),
+        for (mut handle, mut texture, &cell) in &mut cells {
+            match cell {
+                Cell::Crop { level } => {
+                    *handle = assets.crop.clone();
+                    texture.index = (level - 1) as usize;
+                }
+                Cell::Harvested => {
+                    *handle = assets.harvested.clone();
+                    texture.index = 0;
+                }
             }
         }
     }
@@ -122,12 +136,7 @@ impl Plugin {
             .with_children(|field_commands| {
                 for x in 0..field.width {
                     for y in 0..field.height {
-                        let cell = if noise.get([x as f64, y as f64]) > -0.15 {
-                            Cell::Crop
-                        } else {
-                            Cell::Harvested
-                        };
-
+                        let cell = Cell::from_noise_value(noise.get([x as f64, y as f64]));
                         let position = Position(UVec2::new(x, y).as_ivec2());
                         let entity = field_commands
                             .spawn_bundle(SpriteSheetBundle {
@@ -158,8 +167,8 @@ impl Plugin {
         index.crop = textures.add(TextureAtlas::from_grid(
             asset_server.load("crop.png"),
             Vec2::splat(32.0),
-            1,
-            1,
+            2,
+            2,
         ));
         index.harvested = textures.add(TextureAtlas::from_grid(
             asset_server.load("empty_cell.png"),
