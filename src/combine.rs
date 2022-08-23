@@ -79,7 +79,7 @@ impl Plugin {
         {
             if let Ok(mut cell) = cells.get_mut(position) {
                 if let Cell::Crop { level } = *cell {
-                    for _ in 0..level { 
+                    for _ in 0..level {
                         events.send(Harvested);
                     }
                 }
