@@ -1,7 +1,5 @@
-use std::time::Duration;
-
 use bevy::{prelude::*, utils::HashMap};
-use iyes_loopless::prelude::{AppLooplessStateExt, IntoConditionalSystem};
+use iyes_loopless::prelude::AppLooplessStateExt;
 use noise::{Fbm, NoiseFn};
 
 use crate::{despawn, GameState};
@@ -13,14 +11,27 @@ pub struct Field {
     map: HashMap<Position, Entity>,
 }
 
-/// Grow rate, in level-per-seconds
-#[derive(Debug, Clone, Default, Component, Deref, DerefMut)]
-pub struct GrowTimer(Timer);
-
 #[derive(Debug, Copy, Clone, Component)]
 pub enum Cell {
     Crop { level: u8 },
     Harvested,
+}
+
+impl Cell {
+    fn from_noise_value(value: f64) -> Self {
+        println!("{value}");
+        let normalized = (value + 1.0) / 2.0;
+        let level = if normalized < 0.25 {
+            1
+        } else if (0.25..0.5).contains(&normalized) {
+            2
+        } else if (0.5..0.75).contains(&normalized) {
+            3
+        } else {
+            4
+        };
+        Self::Crop { level }
+    }
 }
 
 #[derive(Component)]
@@ -79,7 +90,6 @@ impl bevy::prelude::Plugin for Plugin {
             .add_enter_system(GameState::Ready, despawn::despawn::<Cell>)
             .add_enter_system(GameState::Ready, despawn::despawn::<CellGroup>)
             .add_enter_system(GameState::Ready, Self::spawn)
-            .add_system(Self::grow.run_in_state(GameState::Playing))
             .add_system_to_stage(CoreStage::PostUpdate, Self::update_sprite);
 
         #[cfg(feature = "inspector")]
@@ -126,10 +136,7 @@ impl Plugin {
             .with_children(|field_commands| {
                 for x in 0..field.width {
                     for y in 0..field.height {
-                        let timer = GrowTimer(Timer::new(
-                            Duration::from_secs_f64((noise.get([x as f64, y as f64]) + 1.0) * 5.0),
-                            true,
-                        ));
+                        let cell = Cell::from_noise_value(noise.get([x as f64, y as f64]));
                         let position = Position(UVec2::new(x, y).as_ivec2());
                         let entity = field_commands
                             .spawn_bundle(SpriteSheetBundle {
@@ -142,8 +149,7 @@ impl Plugin {
                                 ..Default::default()
                             })
                             .insert(position)
-                            .insert(Cell::Crop { level: 1 })
-                            .insert(timer)
+                            .insert(cell)
                             .insert(Name::from(format!("Cell ({x},{y})")))
                             .id();
 
@@ -151,17 +157,6 @@ impl Plugin {
                     }
                 }
             });
-    }
-
-    fn grow(time: Res<Time>, mut cells: Query<(&mut Cell, &mut GrowTimer)>) {
-        for (mut cell, mut timer) in cells.iter_mut() {
-            if let Cell::Crop { level } = &mut *cell {
-                timer.tick(time.delta());
-                if timer.just_finished() {
-                    *level = (*level + 1).min(4);
-                }
-            }
-        }
     }
 
     fn load_assets(
