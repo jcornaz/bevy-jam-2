@@ -2,6 +2,7 @@ use bevy::{prelude::*, render::texture::ImageSettings};
 use enemy::PlayerHit;
 use iyes_loopless::prelude::*;
 
+mod barrier;
 mod camera;
 mod combine;
 mod despawn;
@@ -34,6 +35,7 @@ fn main() {
         .add_plugin(combine::Plugin::default())
         .add_plugin(enemy::Plugin::default())
         .add_plugin(turret::Plugin::default())
+        .add_plugin(barrier::Plugin::default())
         .add_plugins(screens::Plugins::default())
         .add_system_set(movement::systems())
         .add_system_set(despawn::systems())
