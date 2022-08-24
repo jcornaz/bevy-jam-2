@@ -19,16 +19,15 @@ pub enum Cell {
 
 impl Cell {
     fn from_noise_value(value: f64) -> Self {
-        println!("{value}");
         let normalized = (value + 1.0) / 2.0;
         let level = if normalized < 0.25 {
-            1
-        } else if (0.25..0.5).contains(&normalized) {
-            2
-        } else if (0.5..0.75).contains(&normalized) {
-            3
-        } else {
             4
+        } else if (0.25..0.5).contains(&normalized) {
+            3
+        } else if (0.5..0.75).contains(&normalized) {
+            2
+        } else {
+            1
         };
         Self::Crop { level }
     }
