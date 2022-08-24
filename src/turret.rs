@@ -153,16 +153,17 @@ impl Plugin {
 
     fn kill_enemy(
         mut commands: Commands,
-        bullets: Query<&GlobalTransform, With<Bullet>>,
+        bullets: Query<(Entity, &GlobalTransform), With<Bullet>>,
         enemies: Query<(Entity, &GlobalTransform), With<Enemy>>,
     ) {
-        for bullet in &bullets {
+        for (bullet_entity, bullet) in &bullets {
             for (enemy_entity, enemy) in &enemies {
                 let dist_squared = (bullet.translation().truncate()
                     - enemy.translation().truncate())
                 .length_squared();
                 if dist_squared < 0.3 {
                     commands.entity(enemy_entity).despawn_recursive();
+                    commands.entity(bullet_entity).despawn_recursive();
                 }
             }
         }
