@@ -58,6 +58,7 @@ impl bevy::prelude::Plugin for Plugin {
                 ConditionSet::new()
                     .run_in_state(GameState::Playing)
                     .with_system(Self::control)
+                    .with_system(Self::reverse_in_front_of_barrier)
                     .with_system(Self::movement)
                     .with_system(Self::harvest)
                     .with_system(Self::rotate_sprite)
@@ -103,6 +104,24 @@ impl Plugin {
             };
 
             movement.control = Some(asked);
+        }
+    }
+
+    fn reverse_in_front_of_barrier(
+        mut combine: Query<(&mut Movement, &Position)>,
+        field: Res<Field>,
+    ) {
+        for (mut movement, position) in &mut combine {
+            if (position.x == 0 && movement.direction.x < 0)
+                || (position.x == field.width as i32 - 1 && movement.direction.x > 0)
+            {
+                movement.direction.x = -movement.direction.x;
+            }
+            if (position.y == 0 && movement.direction.y < 0)
+                || (position.y == field.height as i32 - 1 && movement.direction.y > 0)
+            {
+                movement.direction.y = -movement.direction.y;
+            }
         }
     }
 
