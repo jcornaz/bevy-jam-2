@@ -21,17 +21,19 @@ struct Movement {
     timer: Timer,
 }
 
+const SPEED: f64 = 1.5;
+
 impl Movement {
     fn new(direction: IVec2) -> Self {
         Self {
             direction,
             control: None,
-            timer: Timer::new(Duration::from_secs(1), true),
+            timer: Timer::new(Duration::from_secs(1).div_f64(SPEED), true),
         }
     }
 
     fn world_coord(&self, pos: Position) -> Vec2 {
-        pos.as_vec2() + (self.direction.as_vec2() * self.timer.elapsed_secs())
+        pos.as_vec2() + (self.direction.as_vec2() * (self.timer.elapsed_secs() * SPEED as f32))
     }
 
     fn update(&mut self, pos: &mut Position, delta: Duration) {
