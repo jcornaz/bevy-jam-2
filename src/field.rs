@@ -20,7 +20,6 @@ pub enum Cell {
 impl Cell {
     fn from_noise_value(value: f64) -> Self {
         let normalized = (value + 1.0) / 2.0;
-        println!("{normalized}");
         let level = if normalized < 0.48 {
             4
         } else if normalized > 0.52 {
@@ -160,13 +159,13 @@ impl Plugin {
         mut textures: ResMut<Assets<TextureAtlas>>,
     ) {
         index.crop = textures.add(TextureAtlas::from_grid(
-            asset_server.load("crop.png"),
+            asset_server.load("sprites/crop.png"),
             Vec2::splat(32.0),
             2,
             2,
         ));
         index.harvested = textures.add(TextureAtlas::from_grid(
-            asset_server.load("empty_cell.png"),
+            asset_server.load("sprites/empty_cell.png"),
             Vec2::splat(32.0),
             1,
             1,

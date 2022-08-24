@@ -136,7 +136,7 @@ impl Plugin {
         mut textures: ResMut<Assets<TextureAtlas>>,
     ) {
         table.bird = textures.add(TextureAtlas::from_grid(
-            server.load("enemy.png"),
+            server.load("sprites/enemy.png"),
             Vec2::splat(32.0),
             1,
             1,

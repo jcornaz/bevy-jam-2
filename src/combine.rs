@@ -130,7 +130,7 @@ impl Plugin {
         field: Res<Field>,
     ) {
         let texture_atlas = textures.add(TextureAtlas::from_grid(
-            asset_server.load("combine.png"),
+            asset_server.load("sprites/combine.png"),
             Vec2::splat(32.0),
             1,
             1,

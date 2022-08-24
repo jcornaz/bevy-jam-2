@@ -190,13 +190,13 @@ impl Plugin {
         mut textures: ResMut<Assets<TextureAtlas>>,
     ) {
         table.turret = textures.add(TextureAtlas::from_grid(
-            server.load("turret.png"),
+            server.load("sprites/turret.png"),
             Vec2::splat(32.0),
             1,
             1,
         ));
         table.bullet = textures.add(TextureAtlas::from_grid(
-            server.load("bullet.png"),
+            server.load("sprites/bullet.png"),
             Vec2::splat(32.0),
             1,
             1,
