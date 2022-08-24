@@ -102,9 +102,7 @@ impl Plugin {
                 return;
             };
 
-            if asked != -movement.direction {
-                movement.control = Some(asked);
-            }
+            movement.control = Some(asked);
         }
     }
 
