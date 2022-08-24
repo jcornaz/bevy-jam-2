@@ -20,7 +20,14 @@ pub enum Cell {
 impl Cell {
     fn from_noise_value(value: f64) -> Self {
         let normalized = (value + 1.0) / 2.0;
-        let level = if normalized < 0.5 { 2 } else { 1 };
+        println!("{normalized}");
+        let level = if normalized < 0.48 {
+            4
+        } else if normalized > 0.52 {
+            3
+        } else {
+            2
+        };
         Self::Crop { level }
     }
 }
@@ -69,10 +76,7 @@ pub struct Plugin;
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         let mut noise = Fbm::new();
-        noise.octaves = 3;
-        noise.frequency = 0.5;
-
-        println!("{noise:?}");
+        noise.octaves = 4;
 
         app.insert_resource(Field::new(31, 15))
             .init_resource::<AssetTable>()
@@ -103,7 +107,7 @@ impl Plugin {
             match cell {
                 Cell::Crop { level } => {
                     *handle = assets.crop.clone();
-                    texture.index = (level - 1) as usize;
+                    texture.index = (4 - level) as usize;
                 }
                 Cell::Harvested => {
                     *handle = assets.harvested.clone();
