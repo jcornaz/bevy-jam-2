@@ -48,7 +48,7 @@ impl bevy::prelude::Plugin for Plugin {
             .add_enter_system(GameState::Ready, despawn::<Turret>)
             .add_enter_system(GameState::Ready, Self::spawn_turret)
             .add_system_to_stage(
-                CoreStage::PreUpdate,
+                CoreStage::PostUpdate,
                 Self::aim.run_in_state(GameState::Playing),
             )
             .add_system_set(
@@ -138,6 +138,7 @@ impl Plugin {
         for mut turret_transform in &mut turrets {
             if let Ok(combine_transform) = combines.get_single() {
                 turret_transform.translation = combine_transform.translation + Vec3::Z;
+                turret_transform.translation -= combine_transform.local_x() * 0.15;
             }
 
             let direction =
