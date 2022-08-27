@@ -81,7 +81,8 @@ impl Plugin {
         };
 
         for (enemy_transform, mut enemy_velocity) in enemies.iter_mut() {
-            let separation = combine_transform.translation.truncate() - enemy_transform.translation.truncate();
+            let separation =
+                combine_transform.translation.truncate() - enemy_transform.translation.truncate();
             **enemy_velocity = separation.normalize() * SPEED;
         }
     }
