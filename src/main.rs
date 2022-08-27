@@ -23,6 +23,7 @@ enum GameState {
 fn main() {
     let mut app = App::new();
     app.insert_resource(ImageSettings::default_nearest())
+        .insert_resource(ClearColor(Color::hex("5a655a").unwrap()))
         .add_plugins(DefaultPlugins);
 
     #[cfg(feature = "inspector")]
