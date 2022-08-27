@@ -4,7 +4,9 @@ use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 use rand::{thread_rng, Rng};
 
-use crate::{combine::Harvester, despawn::despawn, field::Field, movement::Moving, GameState};
+use crate::{combine::Harvester, despawn::despawn, field::Field, movement::Velocity, GameState};
+
+const SPEED: f32 = 3.0;
 
 #[derive(Debug, Clone, Default)]
 struct AssetTable {
@@ -52,9 +54,9 @@ impl bevy::prelude::Plugin for Plugin {
 }
 
 impl Plugin {
-    fn stop(mut commands: Commands, enemies: Query<Entity, (With<Enemy>, With<Moving>)>) {
+    fn stop(mut commands: Commands, enemies: Query<Entity, (With<Enemy>, With<Velocity>)>) {
         for enemy in &enemies {
-            commands.entity(enemy).remove::<Moving>();
+            commands.entity(enemy).remove::<Velocity>();
         }
     }
 
@@ -67,7 +69,7 @@ impl Plugin {
     }
 
     fn aim(
-        mut enemies: Query<&mut Transform, With<Enemy>>,
+        mut enemies: Query<(&Transform, &mut Velocity), With<Enemy>>,
         combines: Query<&Transform, (With<Harvester>, Without<Enemy>)>,
     ) {
         let combine_transform = match combines.get_single() {
@@ -78,14 +80,9 @@ impl Plugin {
             }
         };
 
-        for mut enemy_transform in enemies.iter_mut() {
-            let separation =
-                combine_transform.translation.truncate() - enemy_transform.translation.truncate();
-            if separation.length_squared() > 0.2 {
-                let direction = separation.normalize();
-                let angle = Vec2::X.angle_between(direction);
-                enemy_transform.rotation = Quat::from_axis_angle(Vec3::Z, angle);
-            }
+        for (enemy_transform, mut enemy_velocity) in enemies.iter_mut() {
+            let separation = combine_transform.translation.truncate() - enemy_transform.translation.truncate();
+            **enemy_velocity = separation.normalize() * SPEED;
         }
     }
 
@@ -127,7 +124,7 @@ impl Plugin {
             })
             .insert(Enemy)
             .insert(Name::from("Enemy"))
-            .insert(Moving { speed: 3.0 });
+            .insert(Velocity(Vec2::ZERO));
     }
 
     fn load_assets(

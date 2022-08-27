@@ -8,7 +8,7 @@ use crate::{
     despawn::{despawn, DespawnTimer},
     enemy::Enemy,
     mouse::Cursor,
-    movement::Moving,
+    movement::Velocity,
     GameState,
 };
 
@@ -123,7 +123,7 @@ impl Plugin {
                     },
                     ..Default::default()
                 })
-                .insert(Moving { speed: 10.0 })
+                .insert(Velocity(transform.local_x().truncate() * 10.0))
                 .insert(Bullet::default())
                 .insert(DespawnTimer::new(Duration::from_secs(5)))
                 .insert(Name::from("Bullet"));
