@@ -8,6 +8,7 @@ mod combine;
 mod despawn;
 mod enemy;
 mod field;
+mod hud;
 mod mouse;
 mod movement;
 mod screens;
@@ -20,6 +21,11 @@ enum GameState {
     GameOver,
 }
 
+#[derive(Debug, Default)]
+struct Fonts {
+    main: Handle<Font>,
+}
+
 fn main() {
     let mut app = App::new();
     app.insert_resource(ImageSettings::default_nearest())
@@ -30,6 +36,8 @@ fn main() {
     app.add_plugin(bevy_inspector_egui::WorldInspectorPlugin::default());
 
     app.add_loopless_state(GameState::Ready)
+        .init_resource::<Fonts>()
+        .add_startup_system(load_fonts)
         .add_plugin(camera::Plugin::default())
         .add_plugin(mouse::Plugin::default())
         .add_plugin(field::Plugin::default())
@@ -37,6 +45,7 @@ fn main() {
         .add_plugin(enemy::Plugin::default())
         .add_plugin(turret::Plugin::default())
         .add_plugin(barrier::Plugin::default())
+        .add_plugin(hud::Plugin::default())
         .add_plugins(screens::Plugins::default())
         .add_system_set(movement::systems())
         .add_system_set(despawn::systems())
@@ -48,4 +57,8 @@ fn game_over(mut commands: Commands, mut player_hits: EventReader<PlayerHit>) {
     if player_hits.iter().count() > 0 {
         commands.insert_resource(NextState(GameState::GameOver));
     }
+}
+
+fn load_fonts(mut fonts: ResMut<Fonts>, asset_server: Res<AssetServer>) {
+    fonts.main = asset_server.load("fonts/Kenney-Blocks.ttf");
 }

@@ -43,7 +43,6 @@ pub struct Plugin;
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AssetTable>()
-            .init_resource::<Ammo>()
             .add_startup_system(Self::load_assets)
             .add_enter_system(GameState::Ready, despawn::<Turret>)
             .add_enter_system(GameState::Ready, Self::spawn_turret)
@@ -60,20 +59,13 @@ impl bevy::prelude::Plugin for Plugin {
             )
             .add_system_to_stage(
                 CoreStage::PostUpdate,
-                Self::recharge.run_in_state(GameState::Playing),
+                Self::reload.run_in_state(GameState::Playing),
             );
     }
 }
 
 impl Plugin {
-    #[allow(unused)]
-    fn log_ammo(ammos: Query<&Ammo>) {
-        for ammo in &ammos {
-            info!("Ammo: {:?}", **ammo);
-        }
-    }
-
-    fn recharge(mut harvests: EventReader<Harvested>, mut ammos: Query<&mut Ammo>) {
+    fn reload(mut harvests: EventReader<Harvested>, mut ammos: Query<&mut Ammo>) {
         const AMMO_PER_CROP_CELL: u32 = 1;
         const MAX_AMMO: u32 = 20;
         let delta_ammo = harvests.iter().count() as u32 * AMMO_PER_CROP_CELL;
@@ -81,7 +73,7 @@ impl Plugin {
             return;
         }
         for mut ammo in &mut ammos {
-            **ammo = delta_ammo.min(MAX_AMMO);
+            **ammo = (**ammo + delta_ammo).min(MAX_AMMO);
         }
     }
 

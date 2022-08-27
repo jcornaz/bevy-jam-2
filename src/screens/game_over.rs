@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 
-use crate::{despawn::despawn, GameState};
+use crate::{despawn::despawn, Fonts, GameState};
 
 use super::spawn_screen;
 
@@ -26,14 +26,13 @@ impl Plugin {
         }
     }
 
-    fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
-        let font = asset_server.load("fonts/Kenney-Blocks.ttf");
+    fn spawn(mut commands: Commands, fonts: Res<Fonts>) {
         spawn_screen::<GameOverScreen>(&mut commands, |parent| {
             parent.spawn_bundle(
                 TextBundle::from_section(
                     "Game Over!",
                     TextStyle {
-                        font: font.clone(),
+                        font: fonts.main.clone(),
                         font_size: 100.0,
                         color: Color::BLACK,
                     },
@@ -47,7 +46,7 @@ impl Plugin {
                 TextBundle::from_section(
                     "Press <space> to restart",
                     TextStyle {
-                        font,
+                        font: fonts.main.clone(),
                         color: Color::BLACK,
                         font_size: 50.0,
                     },
