@@ -50,6 +50,7 @@ impl Plugin {
                 color: Color::NONE.into(),
                 ..Default::default()
             })
+            .insert(Hud)
             .with_children(|parent| {
                 parent
                     .spawn_bundle(NodeBundle {
