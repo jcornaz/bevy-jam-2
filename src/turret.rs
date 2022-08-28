@@ -71,7 +71,7 @@ impl bevy::prelude::Plugin for Plugin {
             .add_startup_system(Self::load_assets)
             .add_enter_system(GameState::Ready, despawn::<Turret>)
             .add_enter_system(GameState::Ready, despawn::<Item>)
-            .add_enter_system(GameState::Ready, Self::spawn_turret)
+            .add_enter_system(GameState::Playing, Self::spawn_turret)
             .add_system_to_stage(
                 CoreStage::PostUpdate,
                 Self::aim.run_in_state(GameState::Playing),
