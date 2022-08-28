@@ -34,13 +34,13 @@ fn spawn_screen<C: Component + Default>(
             parent
                 .spawn_bundle(NodeBundle {
                     style: Style {
-                        size: Size::new(Val::Percent(60.0), Val::Percent(60.0)),
+                        padding: UiRect::all(Val::Px(50.0)),
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
                         flex_direction: FlexDirection::ColumnReverse,
                         ..Default::default()
                     },
-                    color: Color::rgba(0.2, 0.3, 0.2, 0.99).into(),
+                    color: Color::hex("8399b4").unwrap().into(),
                     ..Default::default()
                 })
                 .with_children(children);
