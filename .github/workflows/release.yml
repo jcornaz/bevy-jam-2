@@ -6,7 +6,7 @@ on:
       - '*'
 
 env:
-  binary: bevy-jam-2
+  binary: combine-vs-aliens
 
 jobs:
   release-wasm:
@@ -71,7 +71,6 @@ jobs:
           asset_name: ${{ env.binary }}-linux-${{ steps.get_version.outputs.tag }}.zip
           tag: ${{ github.ref }}
           overwrite: true
-
   release-windows:
     runs-on: windows-latest
     steps:

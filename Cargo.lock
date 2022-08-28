@@ -228,19 +228,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy-jam-2"
-version = "0.0.0-dev"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_kira_audio",
- "itertools-num",
- "iyes_loopless",
- "noise",
- "rand 0.8.5",
-]
-
-[[package]]
 name = "bevy_animation"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1066,6 +1053,19 @@ checksum = "35ed6e9d84f0b51a7f52daf1c7d71dd136fd7a3f41a8462b8cdb8c78d920fad4"
 dependencies = [
  "bytes",
  "memchr",
+]
+
+[[package]]
+name = "combine-vs-aliens"
+version = "0.0.0-dev"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_kira_audio",
+ "itertools-num",
+ "iyes_loopless",
+ "noise",
+ "rand 0.8.5",
 ]
 
 [[package]]
