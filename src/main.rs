@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 use bevy::{prelude::*, render::texture::ImageSettings};
+use bevy_kira_audio::prelude::*;
 use combine::Harvested;
 use enemy::PlayerHit;
 use field::{Cell, Field};
@@ -43,7 +44,8 @@ fn main() {
     let mut app = App::new();
     app.insert_resource(ImageSettings::default_nearest())
         .insert_resource(ClearColor(Color::hex("5a655a").unwrap()))
-        .add_plugins(DefaultPlugins);
+        .add_plugins(DefaultPlugins)
+        .add_plugin(AudioPlugin::default());
 
     #[cfg(feature = "inspector")]
     app.add_plugin(bevy_inspector_egui::WorldInspectorPlugin::default());
