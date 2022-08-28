@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 
-use crate::{despawn::despawn, GameState};
+use crate::{despawn::despawn, Fonts, GameState, Score};
 
 use super::spawn_screen;
 
@@ -26,14 +26,13 @@ impl Plugin {
         }
     }
 
-    fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
-        let font = asset_server.load("fonts/Kenney-Blocks.ttf");
+    fn spawn(mut commands: Commands, fonts: Res<Fonts>, score: Res<Score>) {
         spawn_screen::<GameOverScreen>(&mut commands, |parent| {
             parent.spawn_bundle(
                 TextBundle::from_section(
-                    "Game Over!",
+                    "Game GameOver",
                     TextStyle {
-                        font: font.clone(),
+                        font: fonts.main.clone(),
                         font_size: 100.0,
                         color: Color::BLACK,
                     },
@@ -43,13 +42,35 @@ impl Plugin {
                     ..default()
                 }),
             );
+            let text_style = TextStyle {
+                font: fonts.main.clone(),
+                color: Color::BLACK,
+                font_size: 50.0,
+            };
+            parent.spawn_bundle(
+                TextBundle::from_sections([
+                    TextSection::new("You gathered ", text_style.clone()),
+                    TextSection::new(
+                        format!("{}", *score),
+                        TextStyle {
+                            font_size: 80.0,
+                            ..text_style.clone()
+                        },
+                    ),
+                    TextSection::new(" of the field!", text_style),
+                ])
+                .with_style(Style {
+                    margin: UiRect::all(Val::Px(10.0)),
+                    ..Default::default()
+                }),
+            );
             parent.spawn_bundle(
                 TextBundle::from_section(
                     "Press <space> to restart",
                     TextStyle {
-                        font,
+                        font: fonts.main.clone(),
                         color: Color::BLACK,
-                        font_size: 50.0,
+                        font_size: 40.0,
                     },
                 )
                 .with_style(Style {

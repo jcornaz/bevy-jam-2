@@ -12,6 +12,8 @@ use crate::{
     GameState,
 };
 
+pub const MAX_AMMO: u32 = 20;
+
 #[derive(Debug, Default)]
 struct AssetTable {
     turret: Handle<TextureAtlas>,
@@ -55,7 +57,6 @@ pub struct Plugin;
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<AssetTable>()
-            .init_resource::<Ammo>()
             .add_startup_system(Self::load_assets)
             .add_enter_system(GameState::Ready, despawn::<Turret>)
             .add_enter_system(GameState::Ready, Self::spawn_turret)
@@ -73,28 +74,20 @@ impl bevy::prelude::Plugin for Plugin {
             )
             .add_system_to_stage(
                 CoreStage::PostUpdate,
-                Self::recharge.run_in_state(GameState::Playing),
+                Self::reload.run_in_state(GameState::Playing),
             );
     }
 }
 
 impl Plugin {
-    #[allow(unused)]
-    fn log_ammo(ammos: Query<&Ammo>) {
-        for ammo in &ammos {
-            info!("Ammo: {:?}", **ammo);
-        }
-    }
-
-    fn recharge(mut harvests: EventReader<Harvested>, mut ammos: Query<&mut Ammo>) {
+    fn reload(mut harvests: EventReader<Harvested>, mut ammos: Query<&mut Ammo>) {
         const AMMO_PER_CROP_CELL: u32 = 1;
-        const MAX_AMMO: u32 = 20;
         let delta_ammo = harvests.iter().count() as u32 * AMMO_PER_CROP_CELL;
         if delta_ammo == 0 {
             return;
         }
         for mut ammo in &mut ammos {
-            **ammo = delta_ammo.min(MAX_AMMO);
+            **ammo = (**ammo + delta_ammo).min(MAX_AMMO);
         }
     }
 
@@ -125,13 +118,12 @@ impl Plugin {
         for (turret_transform, turret) in &turrets {
             let mut transform = *turret_transform;
             transform.translation -= Vec3::Z * 0.5; // To be rendered behind the turret
-            transform.translation += transform.local_x() * 0.2;
+            transform.translation += transform.local_x() * 0.6;
 
             let velocity = match turret.mode {
                 TurretMode::BASE => 10.0,
                 TurretMode::BETTER => 40.0,
             };
-
             commands
                 .spawn_bundle(SpriteSheetBundle {
                     texture_atlas: assets.bullet.clone(),
