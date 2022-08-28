@@ -21,7 +21,7 @@ struct SpawnTimer(Timer);
 
 impl Default for SpawnTimer {
     fn default() -> Self {
-        Self(Timer::new(Duration::from_secs(1), true))
+        Self(Timer::new(Duration::from_secs_f32(0.5), true))
     }
 }
 
