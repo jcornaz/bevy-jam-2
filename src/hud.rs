@@ -37,7 +37,7 @@ impl bevy::prelude::Plugin for Plugin {
 
 impl Plugin {
     fn spawn(mut commands: Commands, fonts: Res<Fonts>, asset_server: Res<AssetServer>) {
-        let color = Color::hex("bd956a").unwrap().into();
+        let color = Color::hex("8399b4").unwrap().into();
         commands
             .spawn_bundle(NodeBundle {
                 style: Style {
@@ -81,7 +81,12 @@ impl Plugin {
                                     },
                                 )
                                 .with_style(Style {
-                                    margin: UiRect::new(Val::Px(0.0), Val::Px(20.0), Val::Px(20.0), Val::Px(20.0)),
+                                    margin: UiRect::new(
+                                        Val::Px(0.0),
+                                        Val::Px(20.0),
+                                        Val::Px(20.0),
+                                        Val::Px(20.0),
+                                    ),
                                     ..Default::default()
                                 }),
                             )
