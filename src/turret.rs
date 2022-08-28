@@ -225,7 +225,15 @@ impl Plugin {
                                 texture_atlas: assets.item.clone(),
                                 transform: *enemy_transform,
                                 sprite: TextureAtlasSprite {
-                                    custom_size: Some(Vec2::ONE * 0.3),
+                                    custom_size: Some(Vec2::ONE),
+                                    index: match turret_mode {
+                                        TurretMode::Shotgun => 0,
+                                        TurretMode::Fast => 1,
+                                        TurretMode::Split => 2,
+                                        TurretMode::Nuke => 3,
+                                        TurretMode::Reverse => 4,
+                                        TurretMode::Base => 5,
+                                    },
                                     ..Default::default()
                                 },
                                 ..Default::default()
@@ -300,8 +308,8 @@ impl Plugin {
         ));
         table.item = textures.add(TextureAtlas::from_grid(
             server.load("sprites/item.png"),
-            Vec2::splat(17.0),
-            1,
+            Vec2::splat(32.0),
+            6,
             1,
         ));
     }
