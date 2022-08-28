@@ -26,7 +26,7 @@ struct AssetTable {
     bullet_sound: Handle<AudioSource>,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 enum TurretMode {
     BASE,
     FAST,
@@ -46,7 +46,7 @@ impl Default for Turret {
     fn default() -> Self {
         Self {
             cool_down: Timer::new(Duration::ZERO, false),
-            mode: TurretMode::SPLIT,
+            mode: TurretMode::BASE,
         }
     }
 }
@@ -124,12 +124,12 @@ impl Plugin {
 
     fn spawn_bullet(
         mut commands: Commands,
-        turrets: Query<(&Transform, &Turret), With<Turret>>,
+        mut turrets: Query<(&Transform, &mut Turret), With<Turret>>,
         assets: Res<AssetTable>,
         audio: Res<Audio>,
     ) {
         audio.play(assets.bullet_sound.clone());
-        for (turret_transform, turret) in &turrets {
+        for (turret_transform, mut turret) in &mut turrets {
             let mut transform = *turret_transform;
             transform.translation -= Vec3::Z * 0.5; // To be rendered behind the turret
 
@@ -165,6 +165,10 @@ impl Plugin {
                     .insert(Bullet::default())
                     .insert(DespawnTimer::new(Duration::from_secs(5)))
                     .insert(Name::from("Bullet"));
+            }
+
+            if turret.mode == TurretMode::NUKE {
+                turret.mode = TurretMode::BASE
             }
         }
     }
@@ -210,8 +214,9 @@ impl Plugin {
                             0..=10 => TurretMode::BASE,
                             11..=40 => TurretMode::FAST,
                             41..=70 => TurretMode::SHOTGUN,
-                            71..=80 => TurretMode::SPLIT,
-                            90..=100 => TurretMode::NUKE,
+                            71..=89 => TurretMode::SPLIT,
+                            90..=90 => TurretMode::REVERSE,
+                            91..=100 => TurretMode::NUKE,
                             _ => TurretMode::BASE,
                         };
 
