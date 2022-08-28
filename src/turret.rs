@@ -19,6 +19,7 @@ struct AssetTable {
     turret: Handle<TextureAtlas>,
     bullet: Handle<TextureAtlas>,
     item: Handle<TextureAtlas>,
+    bullet_sound: Handle<AudioSource>,
 }
 
 #[derive(Debug, Clone)]
@@ -114,7 +115,9 @@ impl Plugin {
         mut commands: Commands,
         turrets: Query<(&Transform, &Turret), With<Turret>>,
         assets: Res<AssetTable>,
+        audio: Res<Audio>,
     ) {
+        audio.play(assets.bullet_sound.clone());
         for (turret_transform, turret) in &turrets {
             let mut transform = *turret_transform;
             transform.translation -= Vec3::Z * 0.5; // To be rendered behind the turret
@@ -241,6 +244,7 @@ impl Plugin {
         server: Res<AssetServer>,
         mut textures: ResMut<Assets<TextureAtlas>>,
     ) {
+        table.bullet_sound = server.load("sounds/bullet-sound.wav");
         table.turret = textures.add(TextureAtlas::from_grid(
             server.load("sprites/turret.png"),
             Vec2::splat(32.0),
