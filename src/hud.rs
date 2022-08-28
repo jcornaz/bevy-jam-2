@@ -69,7 +69,7 @@ impl Plugin {
                         parent.spawn_bundle(ImageBundle {
                             image: UiImage(asset_server.load("icons/ammo.png")),
                             style: Style {
-                                size: Size::new(Val::Px(70.0), Val::Px(70.0)),
+                                size: Size::new(Val::Px(100.0), Val::Px(100.0)),
                                 ..Default::default()
                             },
                             ..Default::default()
@@ -90,7 +90,7 @@ impl Plugin {
                                             "0",
                                             TextStyle {
                                                 font: fonts.main.clone(),
-                                                font_size: 40.0,
+                                                font_size: 60.0,
                                                 color: Color::BLACK,
                                             },
                                         )
@@ -105,7 +105,7 @@ impl Plugin {
                                     format!("/{}", turret::MAX_AMMO),
                                     TextStyle {
                                         font: fonts.main.clone(),
-                                        font_size: 20.0,
+                                        font_size: 40.0,
                                         color: Color::DARK_GRAY,
                                     },
                                 ));
