@@ -57,6 +57,7 @@ jobs:
         run: |
           mkdir linux
           cp target/x86_64-unknown-linux-gnu/release/${{ env.binary }} linux/
+          strip linux/${{ env.binary }}
           cp -r assets linux/
       - name: Package as a zip
         uses: vimtor/action-zip@v1
