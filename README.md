@@ -1,4 +1,4 @@
-# combine-vs-aliens
+# Combine vs aliens
 
 My (potential) contribution for the [bevy-jam 2](https://itch.io/jam/bevy-jam-2)
 
