@@ -30,7 +30,7 @@ impl Plugin {
         spawn_screen::<GameOverScreen>(&mut commands, |parent| {
             parent.spawn_bundle(
                 TextBundle::from_section(
-                    "Game GameOver",
+                    "Game Over",
                     TextStyle {
                         font: fonts.main.clone(),
                         font_size: 100.0,
@@ -49,7 +49,7 @@ impl Plugin {
             };
             parent.spawn_bundle(
                 TextBundle::from_sections([
-                    TextSection::new("You gathered ", text_style.clone()),
+                    TextSection::new("You harvested ", text_style.clone()),
                     TextSection::new(
                         format!("{}", *score),
                         TextStyle {
