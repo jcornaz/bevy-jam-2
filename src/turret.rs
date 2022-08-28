@@ -139,9 +139,9 @@ impl Plugin {
             };
 
             let shots: Vec<f32> = match turret.mode {
-                TurretMode::Shotgun => linspace(-0.2, 0.2, 3).into_iter().collect(),
-                TurretMode::Split => linspace(-0.2, 0.2, 2).into_iter().collect(),
-                TurretMode::Nuke => linspace(-PI, PI, 30).into_iter().collect(),
+                TurretMode::Shotgun => linspace(-0.2, 0.2, 3).collect(),
+                TurretMode::Split => linspace(-0.2, 0.2, 2).collect(),
+                TurretMode::Nuke => linspace(-PI, PI, 30).collect(),
                 TurretMode::Reverse => vec![-PI],
                 _ => vec![0.0],
             };
