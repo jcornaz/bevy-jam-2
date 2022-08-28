@@ -36,7 +36,7 @@ impl bevy::prelude::Plugin for Plugin {
 }
 
 impl Plugin {
-    fn spawn(mut commands: Commands, fonts: Res<Fonts>) {
+    fn spawn(mut commands: Commands, fonts: Res<Fonts>, asset_server: Res<AssetServer>) {
         let color = Color::hex("bd956a").unwrap().into();
         commands
             .spawn_bundle(NodeBundle {
@@ -54,10 +54,22 @@ impl Plugin {
             .with_children(|parent| {
                 parent
                     .spawn_bundle(NodeBundle {
+                        style: Style {
+                            align_items: AlignItems::Center,
+                            ..Default::default()
+                        },
                         color,
                         ..Default::default()
                     })
                     .with_children(|parent| {
+                        parent.spawn_bundle(ImageBundle {
+                            image: UiImage(asset_server.load("icons/ammo.png")),
+                            style: Style {
+                                size: Size::new(Val::Px(70.0), Val::Px(70.0)),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        });
                         parent
                             .spawn_bundle(
                                 TextBundle::from_section(
@@ -69,7 +81,7 @@ impl Plugin {
                                     },
                                 )
                                 .with_style(Style {
-                                    margin: UiRect::all(Val::Px(20.0)),
+                                    margin: UiRect::new(Val::Px(0.0), Val::Px(20.0), Val::Px(20.0), Val::Px(20.0)),
                                     ..Default::default()
                                 }),
                             )
