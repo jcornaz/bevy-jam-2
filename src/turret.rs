@@ -16,17 +16,26 @@ use crate::{
 struct AssetTable {
     turret: Handle<TextureAtlas>,
     bullet: Handle<TextureAtlas>,
+    item: Handle<TextureAtlas>,
+}
+
+#[derive(Debug, Clone)]
+enum TurretMode {
+    BASE,
+    BETTER,
 }
 
 #[derive(Debug, Clone, Component)]
 struct Turret {
     cool_down: Timer,
+    mode: TurretMode,
 }
 
 impl Default for Turret {
     fn default() -> Self {
         Self {
             cool_down: Timer::new(Duration::ZERO, false),
+            mode: TurretMode::BASE,
         }
     }
 }
@@ -36,6 +45,9 @@ pub struct Ammo(u32);
 
 #[derive(Debug, Clone, Component, Default)]
 struct Bullet;
+
+#[derive(Debug, Clone, Copy, Component, Default)]
+pub struct Item;
 
 #[derive(Default)]
 pub struct Plugin;
@@ -56,6 +68,7 @@ impl bevy::prelude::Plugin for Plugin {
                     .run_in_state(GameState::Playing)
                     .with_system(Self::spawn_bullet.run_if(Self::shoot))
                     .with_system(Self::kill_enemy)
+                    .with_system(Self::collect_item)
                     .into(),
             )
             .add_system_to_stage(
@@ -106,13 +119,19 @@ impl Plugin {
 
     fn spawn_bullet(
         mut commands: Commands,
-        turrets: Query<&Transform, With<Turret>>,
+        turrets: Query<(&Transform, &Turret), With<Turret>>,
         assets: Res<AssetTable>,
     ) {
-        for turret_transform in &turrets {
+        for (turret_transform, turret) in &turrets {
             let mut transform = *turret_transform;
-            transform.translation -= Vec3::Z * 0.5; // To be rendenred behind the turret
+            transform.translation -= Vec3::Z * 0.5; // To be rendered behind the turret
             transform.translation += transform.local_x() * 0.2;
+
+            let velocity = match turret.mode {
+                TurretMode::BASE => 10.0,
+                TurretMode::BETTER => 40.0,
+            };
+
             commands
                 .spawn_bundle(SpriteSheetBundle {
                     texture_atlas: assets.bullet.clone(),
@@ -123,7 +142,7 @@ impl Plugin {
                     },
                     ..Default::default()
                 })
-                .insert(Velocity(transform.local_x().truncate() * 10.0))
+                .insert(Velocity(transform.local_x().truncate() * velocity))
                 .insert(Bullet::default())
                 .insert(DespawnTimer::new(Duration::from_secs(5)))
                 .insert(Name::from("Bullet"));
@@ -155,16 +174,56 @@ impl Plugin {
     fn kill_enemy(
         mut commands: Commands,
         bullets: Query<(Entity, &GlobalTransform), With<Bullet>>,
-        enemies: Query<(Entity, &GlobalTransform), With<Enemy>>,
+        enemies: Query<(Entity, &GlobalTransform, &Transform), With<Enemy>>,
+        assets: Res<AssetTable>,
     ) {
         for (bullet_entity, bullet) in &bullets {
-            for (enemy_entity, enemy) in &enemies {
+            for (enemy_entity, enemy, enemy_transform) in &enemies {
                 let dist_squared = (bullet.translation().truncate()
                     - enemy.translation().truncate())
                 .length_squared();
                 if dist_squared < 0.3 {
+                    commands
+                        .spawn_bundle(SpriteSheetBundle {
+                            texture_atlas: assets.item.clone(),
+                            transform: *enemy_transform,
+                            sprite: TextureAtlasSprite {
+                                custom_size: Some(Vec2::ONE * 0.3),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        })
+                        .insert(Item::default())
+                        .insert(DespawnTimer::new(Duration::from_secs(5)))
+                        .insert(Name::from("Item"));
+
                     commands.entity(enemy_entity).despawn_recursive();
                     commands.entity(bullet_entity).despawn_recursive();
+                }
+            }
+        }
+    }
+
+    fn collect_item(
+        mut commands: Commands,
+        combines: Query<&GlobalTransform, (With<Harvester>, Without<Item>)>,
+        items: Query<(Entity, &GlobalTransform), With<Item>>,
+        mut turrets: Query<&mut Turret>,
+    ) {
+        for combine in &combines {
+            for (item_entity, item_transform) in &items {
+                let dist_squared = (combine.translation().truncate()
+                    - item_transform.translation().truncate())
+                .length_squared();
+
+                if dist_squared < 0.3 {
+                    for mut turret in &mut turrets {
+                        turret.mode = TurretMode::BETTER
+                    }
+
+                    commands.entity(item_entity).despawn_recursive();
+
+                    println!("collected!")
                 }
             }
         }
@@ -199,6 +258,12 @@ impl Plugin {
         table.bullet = textures.add(TextureAtlas::from_grid(
             server.load("sprites/bullet.png"),
             Vec2::splat(32.0),
+            1,
+            1,
+        ));
+        table.item = textures.add(TextureAtlas::from_grid(
+            server.load("sprites/item.png"),
+            Vec2::splat(17.0),
             1,
             1,
         ));
