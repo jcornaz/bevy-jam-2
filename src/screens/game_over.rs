@@ -42,15 +42,23 @@ impl Plugin {
                     ..default()
                 }),
             );
+            let text_style = TextStyle {
+                font: fonts.main.clone(),
+                color: Color::BLACK,
+                font_size: 50.0,
+            };
             parent.spawn_bundle(
-                TextBundle::from_section(
-                    format!("You gathered {} of the field!", *score),
-                    TextStyle {
-                        font: fonts.main.clone(),
-                        color: Color::BLACK,
-                        font_size: 50.0,
-                    },
-                )
+                TextBundle::from_sections([
+                    TextSection::new("You gathered ", text_style.clone()),
+                    TextSection::new(
+                        format!("{}", *score),
+                        TextStyle {
+                            font_size: 80.0,
+                            ..text_style.clone()
+                        },
+                    ),
+                    TextSection::new(" of the field!", text_style),
+                ])
                 .with_style(Style {
                     margin: UiRect::all(Val::Px(10.0)),
                     ..Default::default()
