@@ -104,7 +104,7 @@ impl Plugin {
         for turret_transform in &turrets {
             let mut transform = *turret_transform;
             transform.translation -= Vec3::Z * 0.5; // To be rendenred behind the turret
-            transform.translation += transform.local_x() * 0.2;
+            transform.translation += transform.local_x() * 0.6;
             commands
                 .spawn_bundle(SpriteSheetBundle {
                     texture_atlas: assets.bullet.clone(),
