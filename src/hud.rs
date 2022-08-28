@@ -5,7 +5,7 @@ use crate::{
     combine::Harvested,
     despawn::despawn,
     field::{Cell, Field},
-    turret::Ammo,
+    turret::{self, Ammo},
     Fonts, GameState,
 };
 
@@ -56,6 +56,7 @@ impl Plugin {
                     .spawn_bundle(NodeBundle {
                         style: Style {
                             align_items: AlignItems::Center,
+                            padding: UiRect::new(Val::Px(0.0), Val::Px(10.0), Val::Px(10.0), Val::Px(10.0)),
                             ..Default::default()
                         },
                         color,
@@ -71,31 +72,47 @@ impl Plugin {
                             ..Default::default()
                         });
                         parent
-                            .spawn_bundle(
-                                TextBundle::from_section(
-                                    "0",
+                            .spawn_bundle(NodeBundle {
+                                style: Style {
+                                    align_items: AlignItems::FlexStart,
+                                    ..Default::default()
+                                },
+                                color: Color::NONE.into(),
+                                ..Default::default()
+                            })
+                            .with_children(|parent| {
+                                parent
+                                    .spawn_bundle(
+                                        TextBundle::from_section(
+                                            "0",
+                                            TextStyle {
+                                                font: fonts.main.clone(),
+                                                font_size: 40.0,
+                                                color: Color::BLACK,
+                                            },
+                                        )
+                                        .with_style(
+                                            Style {
+                                                ..Default::default()
+                                            },
+                                        ),
+                                    )
+                                    .insert(AmmoText);
+                                parent.spawn_bundle(TextBundle::from_section(
+                                    format!("/{}", turret::MAX_AMMO),
                                     TextStyle {
                                         font: fonts.main.clone(),
-                                        font_size: 40.0,
-                                        color: Color::BLACK,
+                                        font_size: 20.0,
+                                        color: Color::DARK_GRAY,
                                     },
-                                )
-                                .with_style(Style {
-                                    margin: UiRect::new(
-                                        Val::Px(0.0),
-                                        Val::Px(20.0),
-                                        Val::Px(20.0),
-                                        Val::Px(20.0),
-                                    ),
-                                    ..Default::default()
-                                }),
-                            )
-                            .insert(AmmoText);
+                                ));
+                            });
                     });
                 parent
                     .spawn_bundle(NodeBundle {
                         style: Style {
                             align_items: AlignItems::Center,
+                            padding: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(10.0), Val::Px(10.0)),
                             ..Default::default()
                         },
                         color,
