@@ -28,12 +28,12 @@ struct AssetTable {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum TurretMode {
-    BASE,
-    FAST,
-    SHOTGUN,
-    SPLIT,
-    REVERSE,
-    NUKE,
+    Base,
+    Fast,
+    Shotgun,
+    Split,
+    Reverse,
+    Nuke,
 }
 
 #[derive(Debug, Clone, Component)]
@@ -46,7 +46,7 @@ impl Default for Turret {
     fn default() -> Self {
         Self {
             cool_down: Timer::new(Duration::ZERO, false),
-            mode: TurretMode::BASE,
+            mode: TurretMode::Base,
         }
     }
 }
@@ -134,15 +134,15 @@ impl Plugin {
             transform.translation -= Vec3::Z * 0.5; // To be rendered behind the turret
 
             let velocity = match turret.mode {
-                TurretMode::FAST => 20.0,
+                TurretMode::Fast => 20.0,
                 _ => 10.0,
             };
 
             let shots: Vec<f32> = match turret.mode {
-                TurretMode::SHOTGUN => linspace(-0.2, 0.2, 3).into_iter().collect(),
-                TurretMode::SPLIT => linspace(-0.2, 0.2, 2).into_iter().collect(),
-                TurretMode::NUKE => linspace(-PI, PI, 30).into_iter().collect(),
-                TurretMode::REVERSE => vec![-PI],
+                TurretMode::Shotgun => linspace(-0.2, 0.2, 3).into_iter().collect(),
+                TurretMode::Split => linspace(-0.2, 0.2, 2).into_iter().collect(),
+                TurretMode::Nuke => linspace(-PI, PI, 30).into_iter().collect(),
+                TurretMode::Reverse => vec![-PI],
                 _ => vec![0.0],
             };
 
@@ -167,8 +167,8 @@ impl Plugin {
                     .insert(Name::from("Bullet"));
             }
 
-            if turret.mode == TurretMode::NUKE {
-                turret.mode = TurretMode::BASE
+            if turret.mode == TurretMode::Nuke {
+                turret.mode = TurretMode::Base
             }
         }
     }
@@ -211,13 +211,13 @@ impl Plugin {
 
                     if rng.gen_bool(0.1) {
                         let turret_mode = match rng.gen_range(0..100) {
-                            0..=10 => TurretMode::BASE,
-                            11..=40 => TurretMode::FAST,
-                            41..=70 => TurretMode::SHOTGUN,
-                            71..=89 => TurretMode::SPLIT,
-                            90..=90 => TurretMode::REVERSE,
-                            91..=100 => TurretMode::NUKE,
-                            _ => TurretMode::BASE,
+                            0..=10 => TurretMode::Base,
+                            11..=40 => TurretMode::Fast,
+                            41..=70 => TurretMode::Shotgun,
+                            71..=89 => TurretMode::Split,
+                            90..=90 => TurretMode::Reverse,
+                            91..=100 => TurretMode::Nuke,
+                            _ => TurretMode::Base,
                         };
 
                         commands
