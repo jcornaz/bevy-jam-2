@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use bevy::{prelude::*, render::texture::ImageSettings, window::WindowMode};
+use bevy::{prelude::*, render::texture::ImageSettings};
 use bevy_kira_audio::prelude::*;
 use combine::Harvested;
 use enemy::PlayerHit;
@@ -45,7 +45,8 @@ fn main() {
     app.insert_resource(ImageSettings::default_nearest())
         .insert_resource(ClearColor(Color::hex("5a655a").unwrap()))
         .insert_resource(WindowDescriptor {
-            mode: WindowMode::Fullscreen,
+            width: 1800.0,
+            height: 900.0,
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
