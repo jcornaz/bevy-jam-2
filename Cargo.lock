@@ -170,6 +170,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a40729d2133846d9ed0ea60a8b9541bccddab49cd30f0715a1da672fe9a2524"
 
 [[package]]
+name = "atomic-arena"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5450eca8ce5abcfd5520727e975ebab30ccca96030550406b0ca718b224ead10"
+
+[[package]]
 name = "atomic_refcell"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -227,6 +233,7 @@ version = "0.0.0-dev"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
+ "bevy_kira_audio",
  "iyes_loopless",
  "noise",
  "rand 0.8.5",
@@ -290,22 +297,6 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
-]
-
-[[package]]
-name = "bevy_audio"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e5cf4713a24f318841f73a9e030854cfd5bad46bc81fa1acc9590cdab053c6f"
-dependencies = [
- "anyhow",
- "bevy_app",
- "bevy_asset",
- "bevy_ecs",
- "bevy_reflect",
- "bevy_utils",
- "parking_lot 0.12.1",
- "rodio",
 ]
 
 [[package]]
@@ -489,7 +480,6 @@ dependencies = [
  "bevy_animation",
  "bevy_app",
  "bevy_asset",
- "bevy_audio",
  "bevy_core",
  "bevy_core_pipeline",
  "bevy_derive",
@@ -515,6 +505,19 @@ dependencies = [
  "bevy_window",
  "bevy_winit",
  "ndk-glue 0.5.2",
+]
+
+[[package]]
+name = "bevy_kira_audio"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0379febb94c497ac6f6b5c0ef27775f7302f65dc780a33dbcec0c743a474b5f4"
+dependencies = [
+ "anyhow",
+ "bevy",
+ "kira",
+ "parking_lot 0.12.1",
+ "thiserror",
 ]
 
 [[package]]
@@ -1377,6 +1380,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "encoding_rs"
+version = "0.8.31"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9852635589dc9f9ea1b6fe9f05b50ef208c85c834a562f0c6abb1c475736ec2b"
+dependencies = [
+ "cfg-if 1.0.0",
+]
+
+[[package]]
 name = "env_logger"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1716,12 +1728,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 
 [[package]]
-name = "hound"
-version = "3.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a164bb2ceaeff4f42542bdb847c41517c78a60f5649671b2a07312b6e117549"
-
-[[package]]
 name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1868,6 +1874,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "kira"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "556d90f602ffc4996630769a645035b041786d1b927a17cfbc6a9c3000e62de9"
+dependencies = [
+ "atomic-arena",
+ "cpal",
+ "ringbuf",
+ "symphonia",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1897,9 +1915,9 @@ dependencies = [
 
 [[package]]
 name = "lock_api"
-version = "0.4.7"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "327fa5b6a6940e4699ec49a9beae1ea4845c6bab9314e4f84ac68742139d8c53"
+checksum = "9f80bf5aacaf25cbfc8210d1cfb718f2bf3b11c4c54e5afe36c236853a8ec390"
 dependencies = [
  "autocfg",
  "scopeguard",
@@ -2611,13 +2629,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1382d1f0a252c4bf97dc20d979a2fdd05b024acd7c2ed0f7595d7817666a157"
 
 [[package]]
-name = "rodio"
-version = "0.15.0"
+name = "ringbuf"
+version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec0939e9f626e6c6f1989adb6226a039c855ca483053f0ee7c98b90e41cf731e"
+checksum = "f65af18d50f789e74aaf23bbb3f65dcd22a3cb6e029b5bced149f6bd57c5c2a2"
 dependencies = [
- "cpal",
- "hound",
+ "cache-padded",
 ]
 
 [[package]]
@@ -2758,6 +2775,65 @@ name = "svg_fmt"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8fb1df15f412ee2e9dfc1c504260fa695c1c3f10fe9f4a6ee2d2184d7d6450e2"
+
+[[package]]
+name = "symphonia"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "17033fe05e4f7f10a6ad602c272bafd2520b2e5cdd9feb61494d9cdce08e002f"
+dependencies = [
+ "lazy_static",
+ "symphonia-codec-pcm",
+ "symphonia-core",
+ "symphonia-format-wav",
+ "symphonia-metadata",
+]
+
+[[package]]
+name = "symphonia-codec-pcm"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "17cca412c954abda6ab62b5e51223568eb604ed8266ec777d99e1d63c608443c"
+dependencies = [
+ "log",
+ "symphonia-core",
+]
+
+[[package]]
+name = "symphonia-core"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "199a6417cd4115bac79289b64b859358ea050b7add0ceb364dc991f628c5b347"
+dependencies = [
+ "arrayvec",
+ "bitflags",
+ "bytemuck",
+ "lazy_static",
+ "log",
+]
+
+[[package]]
+name = "symphonia-format-wav"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f9d771aa6889f05b771e629110f6a60b5e1c0ad580fc41da574bc490fbe2822"
+dependencies = [
+ "log",
+ "symphonia-core",
+ "symphonia-metadata",
+]
+
+[[package]]
+name = "symphonia-metadata"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ed71acf6b5e6e8bee1509597b86365a06b78c1d73218df47357620a6fe5997b"
+dependencies = [
+ "encoding_rs",
+ "lazy_static",
+ "log",
+ "symphonia-core",
+]
 
 [[package]]
 name = "syn"

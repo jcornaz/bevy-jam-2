@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use bevy_kira_audio::prelude::*;
 use iyes_loopless::prelude::*;
 
 use crate::{
