@@ -306,14 +306,3 @@ impl Plugin {
         ));
     }
 }
-
-// fn linspace(range: RangeInclusive<f32>, count: u8) -> Vec<f32> {
-//     let mut vec = Vec::with_capacity(count as usize);
-//     vec.push(*range.start());
-//     let step_size = (*range.end() - *range.start()) / (count - 1) as f32;
-//     for i in 1..count {
-//         vec.push(i as f32 * step_size);
-//     }
-//     vec.push(*range.end());
-//     vec
-// }
