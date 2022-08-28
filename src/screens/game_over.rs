@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 
-use crate::{despawn::despawn, Fonts, GameState};
+use crate::{despawn::despawn, Fonts, GameState, Score};
 
 use super::spawn_screen;
 
@@ -26,11 +26,11 @@ impl Plugin {
         }
     }
 
-    fn spawn(mut commands: Commands, fonts: Res<Fonts>) {
+    fn spawn(mut commands: Commands, fonts: Res<Fonts>, score: Res<Score>) {
         spawn_screen::<GameOverScreen>(&mut commands, |parent| {
             parent.spawn_bundle(
                 TextBundle::from_section(
-                    "Game Over!",
+                    "Game GameOver",
                     TextStyle {
                         font: fonts.main.clone(),
                         font_size: 100.0,
@@ -44,11 +44,25 @@ impl Plugin {
             );
             parent.spawn_bundle(
                 TextBundle::from_section(
-                    "Press <space> to restart",
+                    format!("You gathered {} of the field!", *score),
                     TextStyle {
                         font: fonts.main.clone(),
                         color: Color::BLACK,
                         font_size: 50.0,
+                    },
+                )
+                .with_style(Style {
+                    margin: UiRect::all(Val::Px(10.0)),
+                    ..Default::default()
+                }),
+            );
+            parent.spawn_bundle(
+                TextBundle::from_section(
+                    "Press <space> to restart",
+                    TextStyle {
+                        font: fonts.main.clone(),
+                        color: Color::BLACK,
+                        font_size: 40.0,
                     },
                 )
                 .with_style(Style {

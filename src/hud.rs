@@ -2,11 +2,9 @@ use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 
 use crate::{
-    combine::Harvested,
     despawn::despawn,
-    field::{Cell, Field},
     turret::{self, Ammo},
-    Fonts, GameState,
+    Fonts, GameState, Score,
 };
 
 #[derive(Component)]
@@ -56,7 +54,12 @@ impl Plugin {
                     .spawn_bundle(NodeBundle {
                         style: Style {
                             align_items: AlignItems::Center,
-                            padding: UiRect::new(Val::Px(0.0), Val::Px(10.0), Val::Px(10.0), Val::Px(10.0)),
+                            padding: UiRect::new(
+                                Val::Px(0.0),
+                                Val::Px(10.0),
+                                Val::Px(10.0),
+                                Val::Px(10.0),
+                            ),
                             ..Default::default()
                         },
                         color,
@@ -112,7 +115,12 @@ impl Plugin {
                     .spawn_bundle(NodeBundle {
                         style: Style {
                             align_items: AlignItems::Center,
-                            padding: UiRect::new(Val::Px(0.0), Val::Px(0.0), Val::Px(10.0), Val::Px(10.0)),
+                            padding: UiRect::new(
+                                Val::Px(0.0),
+                                Val::Px(0.0),
+                                Val::Px(10.0),
+                                Val::Px(10.0),
+                            ),
                             ..Default::default()
                         },
                         color,
@@ -164,22 +172,12 @@ impl Plugin {
         }
     }
 
-    fn update_score(
-        mut harvested: EventReader<Harvested>,
-        cells: Query<&Cell>,
-        field: Res<Field>,
-        mut texts: Query<&mut Text, With<ScoreText>>,
-    ) {
-        if harvested.iter().count() == 0 {
+    fn update_score(score: Res<Score>, mut texts: Query<&mut Text, With<ScoreText>>) {
+        if !score.is_changed() {
             return;
         }
-        let count = cells
-            .iter()
-            .filter(|c| matches!(c, Cell::Harvested))
-            .count();
-        let percentage = 100.0 * count as f32 / (field.width * field.height) as f32;
         for mut text in &mut texts {
-            text.sections[0].value = format!("{:.0}%", percentage);
+            text.sections[0].value = format!("{}", *score);
         }
     }
 }
