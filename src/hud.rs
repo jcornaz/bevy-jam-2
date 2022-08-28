@@ -94,6 +94,10 @@ impl Plugin {
                     });
                 parent
                     .spawn_bundle(NodeBundle {
+                        style: Style {
+                            align_items: AlignItems::Center,
+                            ..Default::default()
+                        },
                         color,
                         ..Default::default()
                     })
@@ -114,6 +118,20 @@ impl Plugin {
                                 }),
                             )
                             .insert(ScoreText);
+                        parent.spawn_bundle(ImageBundle {
+                            image: UiImage(asset_server.load("icons/field.png")),
+                            style: Style {
+                                size: Size::new(Val::Px(50.0), Val::Px(50.0)),
+                                margin: UiRect::new(
+                                    Val::Px(0.0),
+                                    Val::Px(20.0),
+                                    Val::Px(0.0),
+                                    Val::Px(0.0),
+                                ),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        });
                     });
             });
     }
