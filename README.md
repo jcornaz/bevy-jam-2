@@ -13,22 +13,15 @@ Conveniently the combine is equipped with a turret that can shoot enemies using 
 
 The game is played on a grid of squared cells.
 A cell can be harvested at most once.
-Cells may also be "harvested" or "destroyed" by enemies. (birds eating the crops, falling meteors, etc.)
+Cells may also be "harvested" or "destroyed" by enemies.
 
-Difficulty gradually increases over time by having more enemies spawning, and fewer crops to harvest.
+Difficulty gradually increases over time as there is fewer crop to harvest.
 The game ends on player death, showing a score that is the quantity of the harvested crop.
 
 ### Controls
 
 * Use WASD or the arrow keys to change the direction of the combine (the combine advances automatically and cannot be stopped)
 * Aim with the mouse and shoot with left-click
-
-### Potential names for the game
-
-* The great harvest
-* The last harvest
-* Harvest for your life
-* Crop is ammo
 
 ## MSRV
 
