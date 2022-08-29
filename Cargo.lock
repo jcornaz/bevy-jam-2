@@ -1057,7 +1057,7 @@ dependencies = [
 
 [[package]]
 name = "combine-vs-aliens"
-version = "1.0.0-alpha.2"
+version = "1.0.0-alpha.4"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
