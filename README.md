@@ -1,8 +1,8 @@
 # Combine vs aliens
 
-My (potential) contribution for the [bevy-jam 2](https://itch.io/jam/bevy-jam-2)
+My submission for the [bevy-jam 2](https://itch.io/jam/bevy-jam-2). (the theme was "Combine")
 
-The theme is "Combine"
+The game is playable [here](https://jomag.itch.io/combien-vs-aliens)
 
 ## Game idea
 
@@ -22,10 +22,6 @@ The game ends on player death, showing a score that is the quantity of the harve
 
 * Use WASD or the arrow keys to change the direction of the combine (the combine advances automatically and cannot be stopped)
 * Aim with the mouse and shoot with left-click
-
-## MSRV
-
-The minimum supported rust version is, at all times, the latest stable.
 
 ## Unlicense
 
