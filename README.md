@@ -4,6 +4,10 @@ My submission for the [bevy-jam 2](https://itch.io/jam/bevy-jam-2). (the theme w
 
 The game is playable [here](https://jomag.itch.io/combien-vs-aliens)
 
+## Status
+
+This was a game-jam project there is no intention to continue working on it. The code is an untested tightly coupled mess.
+
 ## Game idea
 
 You are in the middle of a crop field and drive a combine that needs to harvest as much crop as possible.
